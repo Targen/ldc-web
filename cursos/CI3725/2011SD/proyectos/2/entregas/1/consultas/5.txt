@@ -1,0 +1,51 @@
+> Una nueva duda en relación al proyecto:
+> Los string y las listas permiten concatenación usando el símbolo +.
+> Pero, hay concatenación entre elementos de distinto tipo? y cuales
+> combinaciones entre tipos diferentes están permitidas?
+
+Lo primero que es importante que sepan es que estas revisiones no pueden hacerse de manera completa usando solamente la estructura de la gramática porque implican contexto, y la gramática solo es capaz de verificar propiedades de la entrada que se correspondan con estructuras de lenguajes libres de contexto.  Además, para esta entrega no es necesario que hagan revisión de error alguna según el documento de especificación de las entregas.  Dicho eso, es una buena pregunta.
+
+> int + str
+
+Esto definitivamente es válido.  La sección 3.1 de la especificación dice
+        Para los strings, se tiene como único operador la concatenación, usando el símbolo +, que permite concatenar cualquier cantidad de elementos, sean estos de cualquier tipo de valor.
+Si una expresión completa es de la forma
+        5 + "no"
+el valor de esa expresión será un string cuyo contenido sea un caracter '5' seguido de un caracter 'n' y un caracter 'o'.
+
+> int + list
+
+La sección 3.1 de la especificación dice
+        Para las listas, el operador principal es la concatenación, con mismo símbolo que la suma y la concatenación de strings.
+El uso del término "concatenación" en relación a listas típicamente se refiere a una operación que toma dos listas y retorna otra lista que es el resultado de concatenarlas.  Siguiendo esta interpretación, no tendría sentido una expresión como
+        [1, 2, 3] + 4
+pero sí tendría sentido una expresión como
+        [1, 2, 3] + [4]
+Por este razonamiento yo diría que no puede ser válido este caso, y si hacen que pueda hacerse, estarían implementando una extensión al lenguaje (que es algo que puede potencialmente tener validez, pero deben hacerlo con mucho cuidado).
+
+> str + list
+
+A los strings se les puede "concatenar" cualquier cosa, incluyendo listas.  Si escribo
+        "lista: " + [1,2,3]
+probablemente es porque quiero que el resultado de esa expresión sea el string "lista: [1, 2, 3]" o algo similar.  Este caso es válido.
+
+> list of int + list of string
+
+Esto es una concatenación de listas de tipos incompatibles, así que no puede ser válido.
+
+>
+> En el caso de permitisse las concatenaciones entre distintos tipos,
+> particularmente para listas, importa si la concatenación es por derecha o
+> por izquierda (o hay diferencia entre concatenar al principio y al final)?
+>
+> int + str == str + int ??
+> str + list == list + str ??
+
+Todos esos casos producen un string, porque lo que están haciendo es una concatenación de algo a un string.  El valor cambiaría, claro: los caracteres no estarían en el mismo orden en cada resultado.  Pero la especificación dice que siempre se puede aplicar el operador '+' con un string y cualquier otra cosa, y así producir un string, así que todos esos casos, aunque no son equivalentes, sí son válidos.
+
+>
+> En el caso particular int + list of int, se interpreta como concatenación de
+> un elemento a la lista, a la suma del valor de int a todos lo elementos de
+> la lista?
+
+Ese caso es inválido: si uno de los operandos del operador '+' es una lista, entonces el otro debe ser otra lista (y en este caso se trataría de una concatenación de listas, que resulta en otra lista) o un string (y en este caso se trataría de una concatenación de algo a un string, que resulta en otro string).  Un entero no es una posibilidad aquí.

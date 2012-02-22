@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+                <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+                <title>Notas de Manuel Gómez sobre CI3725 - Sugerencias para el proyecto 1</title>
+                <style type="text/css">p { text-align:justify; }</style>
+        </head>
+
+        <body>
+                <h1><a href="index.html">Notas de Manuel Gómez sobre CI3725</a></h1>
+                <hr/>
+                <h2>2011-10-25 (semana 6): Sugerencias para el proyecto 1</h2>
+                <p>Disculpen que no haya escrito más nada por acá.  He estado ocupadísimo.  De hecho aun estoy ocupadísimo, así que no haré más que dejarles acá varias sugerencias que le escribí a un estudiante del curso en respuesta a su entrega de proyecto (la fecha de entrega se cambió, así que tiene tiempo para mejorarlo un poco).  Algunas son específicas para lo que él hizo, pero creo que en general hay sugerencias que pueden ser útiles a los demás.  Desgraciadamente no tengo tiempo de editar lo que escribí como para que sean sugerencias un poco más generales.  Cualquier cosa estoy disponible por cualquiera de las formas de contacto que salen arriba.</p>
+                <blockquote>
+                        <p>Estuve viendo un poco tu código y te tengo varias observaciones/sugerencias que quizás quieras considerar para lo que hagas de aquí al viernes:</p>
+                        <ol>
+                                <li><p>La línea de hashbang que tienes está bien, pero SOLO funciona si es lo primero que aparece en todo el archivo.  Como le pones antes un comentario, no va a funcionar.</p></li>
+                                <li><p>El archivo principal se llama "<code>instancias.py</code>", pero debería llamarse solo "<code>instancias</code>".  Además, debería tener permiso ejecutable, pero el formato "<code>.rar</code>" que usaste no permite almacenar los permisos de un archivo.  No creo que sea tomado en cuenta para la evaluación, pero por si acaso, sería preferible que entregaras un "<code>.tar.bz2</code>" o un "<code>.tar.gz</code>" en vez de un RAR.</p></li>
+                        <li><p>No estás tomando en cuenta el orden de los argumentos.  Te doy un ejemplo: la orden "<code>./instancias +casa +sapo hola.txt chao -rana</code>" especifica que deben buscarse la cadenas "<code>casa</code>" y "<code>sapo</code>" en los archivos llamados "<code>hola.txt</code>", "<code>chao</code>" y "<code>-rana</code>".  Esto es porque todos los argumentos de línea de comando desde el primero que no comience en '<code>+</code>' o '<code>-</code>' hasta el último deben especificar nombres de archivos, independientemente de cuál sea su formato.  Adicionalmente a esto, el argumento especial "<code>-</code>" especifica que de ahí en adelante son puros nombres de archivos: por ejemplo, la orden "<code>./instancias +hola -chao - +casa - -sapo</code>" especifica que debe buscarse la cadena "<code>hola</code>" y la ausencia de la cadena "<code>chao</code>" en los archivos llamados "<code>+casa</code>", "<code>-</code>" y "<code>-sapo</code>".  Este argumento es opcional y se usa solo para cuando se quieren especificar nombres de archivos que podrían confundirse con especificaciones de cadenas.  Si no aparece, los archivos comienzan en el primero que no comience en '<code>+</code>' o '<code>-</code>'.</p></li>
+                        <li><p>Para soportar Unicode correctamente deberías agregar al inicio de tus archivos de código la línea que especifique que están escritos con la codificación UTF-8: "<code># -*- coding: utf-8 -*-</code>".  Esta línea debería aparecer antes que todo lo demás en cada archivo, excepto por la línea de hashbang en caso de que esté.</p></li>
+                        <li>
+                                <p>También para mejorar el soporte de Unicode en tu proyecto, cuando escribas un string literal deberías poner algo como</p>
+                                <blockquote><p><code>u"hola"</code></p></blockquote>
+                                <p>en vez de simplemente</p>
+                                <blockquote><p><code>"hola"</code></p></blockquote>
+                                <p>para que sea un string Unicode en vez de un bytestring, y si ese string es para una expresión regular completa o una parte de una, te conviene que además sea un "raw string".  Por ejemplo, podrías escribir</p>
+                                <blockquote><p><code>ur"[\W\w\s]*"</code></p></blockquote>
+                                <p>en vez de simplemente</p>
+                                <blockquote><p><code>"[\W\w\s]*"</code></p></blockquote>
+                                <p>En este caso particular no hay diferencia porque Python reconoce que "<code>\w</code>", por ejemplo, no corresponde a una secuencia de escape de ningún caracter en particular así que genera un string con dos caracteres (un '<code>\</code>' y un '<code>w</code>'), a diferencia de "<code>\n</code>" que se transforma en un solo caracter (un "line feed", al menos en Unix).  En una expresión regular de Python, el caracter '<code>\</code>' seguido del caracter '<code>n</code>' significa "reconoce un fin de línea", así que eso funcionará como debe.  Pero hay otras cosas donde el caracter '<code>\</code>' debería permanecer intacto y quizás no sea equivalente como en ese caso sencillo.  En &lt;<a href="http://docs.python.org/reference/lexical_analysis.html#string-literals">http://docs.python.org/reference/lexical_analysis.html#string-literals</a>&gt; hay una buena descripción de cómo funcionan estas cosas.  En resumen: pon "<code>u</code>" antes de tus literales de string, y si son para expresiones regulares, "<code>ur</code>".</p>
+                        </li>
+                        <li>Enciende el modo Unicode para el reconocimiento de expresiones regulares cada vez que llames a la función "<code>re.match()</code>": "<code>re.match(regex, input, re.U)</code>".</li>
+                        <li>
+                                <p>Cuando leas un argumento de línea de comando del arreglo "<code>sys.argv</code>", deberías realizar la decodificación.  Por ejemplo, "<code>for arg in sys.argv: hacer_algo(arg.decode('utf-8'))</code>".  Lo mismo aplica para cada línea que leas de los archivos de entrada:</p>
+                                <blockquote><pre>
+for filename in filenames:
+        with open(filename) as file:
+                for line in file:
+                        re.match(regex, line.decode('utf-8'), re.U)
+                                </pre></blockquote>
+                                <p>Nota que la expresión regular se corre sobre "<code>line.decode('utf-8')</code>" y no solo sobre "<code>line</code>".  Pero mosca: ese código así tal cual no va a funcionar muy bien, porque esas líneas así van a incluir el '<code>\n</code>' terminal si existe, y tienes que eliminarlo en esos casos.  Puedes usar la función "<code>rstrip</code>" con el argumento "<code>'\n'</code>", por ejemplo.</p>
+                        </li>
+                        <li>
+                                <p>Ten cuidado con los caracteres que vienen en los patrones: podrían venir en los patrones cosas como "<code>+hola*chao</code>", por ejemplo, y ese '<code>*</code>' podría dar problemas si no le haces el escaping para que en la expresión regular se interprete como indicación de reconocer un caracter asterisco en vez de indicación de que la '<code>a</code>' que tiene antes puede aparecer cualquier cantidad de veces.  Cuando los caracteres los generas en un "bracket expression" (dentro de corchetes) también tienes que considerar los significados especiales que pueden tener algunos caracteres: si especifico el patrón "<code>-a]</code>" o algo similar, podrían pasar cosas malas.  Es un poco como lo que se tiene que hacer para evitar vulnerabilidades de SQL injection, por ejemplo.  Probablemente puedes resolver muchos de estos problemas usando la función "<code>escape</code>" del módulo "<code>re</code>".  Finalmente, es posible que a tu programa se le provean caracteres en los patrones que sencillamente no tendrían sentido.  El caso que se me ocurre es que uno de los argumentos de patrones incluya un fin de línea: por ejemplo, podría correrse así:</p>
+                                <blockquote><p><code>./instancias $'+a\nb' in.txt</code></p></blockquote>
+                                <p>Usando el shell Bash, esa orden genera un argumento cuyo texto es un caracter '<code>+</code>', luego una '<code>a</code>', luego un fin de línea y luego una '<code>b</code>'.  Como la operación del proyecto debe ser línea por línea, no tendría sentido que haya un fin de línea en los patrones, así que eso debería generar un mensaje de error y terminar la ejecución.</p>
+                        </li>
+                        <li><p>No deberías imprimir la cadena "linea entera", sino la línea como tal.</p></li>
+                        <li><p>Tienes ideas interesantes para la construcción de la expresión regular.  No la revisé a profundidad, pero encontré al menos un caso en el que falla: crea un archivo con la línea "<code>hochao</code>" y prueba ese archivo con los patrones "<code>-hola</code>" y "<code>-chao</code>"; es decir, "<code>echo hochao &gt; in.txt &amp;&amp; ./instancias -hola -chao in.txt</code>" o algo así.</p></li>
+                        <li><p>La expresión regular "<code>[+]</code>", por ejemplo, es equivalente a la expresión regular "<code>+</code>".  No hace falta usar una clase de caracteres cuando solo tiene un caracter y no está negada.  Para las expresiones regulares que trabajan sobre los argumentos de línea de comando podrías simplemente usar "<code>\A+.</code>" y "<code>\A-.</code>", que significan "justo después del comienzo de la entrada tiene que haber un '<code>+</code>' (o un '<code>-</code>' para el segundo caso), y luego hay al menos un caracter más" (no necesitan consumir el string completo: recuerda que "<code>re.match</code>" admite match parcial).  Como lo tienes ahorita, aceptan argumentos como "<code>hola+chao</code>" como si especificara el patrón positivo "<code>chao</code>", pero un argumento de esa forma debería interpretarse como el nombre de un archivo de entrada llamado "<code>hola+chao</code>".  De paso, los nombres de archivos pueden ser cualquier cosa que no incluya caracteres nulos... no necesariamente deben terminar en "<code>.txt</code>".  Además, la clase de caracteres que escribiste, "<code>[\s\w\W]</code>", redunda: "<code>\W</code>" significa cualquier cosa que no esté en "<code>\w</code>", así que "<code>[\w\W]</code>" es equivalente a "<code>.</code>" en modo multilínea.  Y "<code>\s</code>" está incluido en "<code>\W</code>".</p></li>
+                        </ol>
+                        <p>No sé qué criterios de corrección exactos se vayan a aplicar, pero si tomas en cuenta estas sugerencias podrás mejorar considerablemente la calidad de tu proyecto.  En cuanto a funcionalidad como tal, te recomiendo que te enfoques en lograr funcionalidades particulares si no logras hacer que funcione en el caso más general: por ejemplo, hacer que funcione perfectamente cuando hay solo patrones positivos, o hacer que funcione perfectamente cuando hay muchos patrones positivos y a lo sumo uno negativo.  El caso totalmente general es bastante difícil de implementar siguiendo una estrategia como la que estás aplicando (tendrías que considerar cosas como palíndromos, palabras que son una palabra más pequeña repetida varias veces, o más generalmente palabras que tienen sufijos que son también prefijos de ella misma, etc) y ver qué patrón aparece en la expresión regular correspondiente a cosas así.</p>
+                        <p>Estaré pendiente del correo por si tienes cualquier duda.  Suerte con eso!</p>
+                </blockquote>
+                <hr/>
+                <p>
+                        <a href="http://validator.w3.org/check?uri=referer">
+                                <img src="http://www.w3.org/Icons/valid-xhtml11" alt="Valid XHTML 1.1" height="31" width="88"/>
+                        </a>
+                </p>
+                <p>Y lo escribí a mano en Vim sin más referencia que las primeras 4 líneas del boilerplate.</p>
+                <p>Like a boss.</p>
+        </body>
+</html>

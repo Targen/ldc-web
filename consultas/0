@@ -1,0 +1,139 @@
+> Hola, disculpa tenemos una duda con respecto a los cuantificadores del
+> lenguaje shinyEL. Sabemos que es de la forma [% operador variable:
+> lista :
+> expresion %]. Tenemos la duda de si en "lista" se puede colocar otro
+> cuantificador anidado.
+
+Sí: los cuantificadores pueden tomar una lista especificada de
+cualquier manera, incluyendo otro cuantificador.
+
+> Y otra cosita, las listas pueden contener tanto valores literales como
+> variables o expresiones ? Aunque esas validaciones creo q no son para
+> esta
+> entrega verdad?. En las listas por ahora se podría chequear que
+> exista cualquier expresión asi sea un if una declaración o cualquier
+> cosa?
+
+Las listas son homogéneas: esto significa que todos sus elementos
+deben ser de un mismo tipo.  Si una lista es de enteros, puede tener
+expresiones cuyo valor resulte ser un entero como
+       3 + n
+(si "n" es de tipo entero), incluyendo literales enteros como
+       42
+.  Si una lista es de cadenas de caracteres, puede tener expresiones
+que resulten en cadenas de caracteres, como
+       "hola " + 5 + " mundo"
+, incluyendo literales de cadena de caracter, como
+       "hola \"mundo\""
+.  Las listas no pueden contener declaraciones porque las
+declaraciones no son expresiones.  No usen el parser directamente para
+verificar por medio de la gramática si una expresión es del tipo
+correcto: ese es un chequeo que solo puede hacerse completo luego
+cuando tienen construidos todos los árboles de todos los tags de shiny
+presentes en la entrada.  Para esta entrega deben construir, entre
+otras cosas, la tabla de símbolos que se usa para realizar esa
+verificación de contexto.
+
+> En la parte que colocaste "hola " + 5 + " mundo" el numero 5 se puede
+> concatenar con cadenas de caracteres? o es sólo mientras hacemos
+> las gramáticas ?
+
+En el párrafo 2 de la sección 3.1 de la especificación dice "Para los strings, se tiene como único operador la concatenación, usando el símbolo +, que permite concatenar cualquier cantidad de elementos, sean estos de cualquier tipo de valor.".
+
+Eso significa que es válido que en una expresión aparezca
+        "hola " + 5
+y su significado es el string literal "hola " concatenado con una representación como string del entero de valor 5.  Esto puede aparecer en cualquier expresión, y en la etapa de verificación estática de contexto —que viene después de parsear y tener el árbol construido— deben revisar que esa expresión ocurra en un contexto en el que es aceptable una cadena de caracteres.  Por ejemplo, este tag de ShinyEL es válido:
+        {% s : string := "hola " + 5 + " mundo" %}
+Pero este no:
+        {% xs : list of int, n : int := [1, 2, 3, "hola " + 4], 7 %}
+Y este tampoco, suponiendo que el anterior venían antes de él:
+        {%= n : string := xs[0] }
+Esta revisión no puede hacerse completa con solo la gramática porque implica contexto, y la gramática solo es capaz de realizar verificaciones de correctitud estructural correspondientes a estructuras de lenguajes libres de contexto.  Por lo tanto, esos tags, que no tienen errores que puedan detectarse con una gramática adecuada para este proyecto, generarán árboles de derivación que podrían representarse así:
+        ShinyTag(Assing([Declaration(Identifier('n'), StringType())], [Sum(Sum(String('hola'), Number(5)), String(' mundo'))]))
+para el primero;
+        ShinyTag(Assign([Declaration(Identifier('xs'), ListOfIntType()), Declaration(Identifier('n'), IntType())], [List([Number(1), Number(2), Number(3), Sum(String('hola '), Number(4))]), Number(7)]))
+para el segundo, y finalmente
+        ShinyOutputTag(Assign([Declaration(Identifier('n'), StringType())], [GetIndex(Identifier('xs'), Number(0))]))
+para el tercero.  Esto es solo un ejemplo: su estructura podría variar ligeramente y los nombres de las clases pueden ser los que ustedes quieran; lo importante es que esto sea una representación no ambigua de cada tag de ShinyEL con la estructura correcta.  Lo importante es que generan tablas de símbolos que podrían ser algo así:
+        { 's' : 'string' }
+para el primero,
+        { 'xs' : 'list of int', 'n' : 'int' }
+para el segundo, y finalmente
+        { 'n' : 'string' }
+para el tercero.  Es claro que si estos tags existen en el mismo archivo de entrada sería imposible construir una tabla de símbolos unificada para todo el programa de entrada por varias razones:
+- El identificador 'n' se define en más de un tag.
+- Hasta si esto no fuera un problema (y lo es: no se puede definir una variable en más de un sitio, y las variables son la misma si su nombre es el mismo) sería imposible decidir cuál es su tipo.
+
+> Hay otra cosa que me tiene confundida, que es si las gramáticas deben formar
+> un árbol de derivación con las asociatividades correctas de cada operador.
+> Porq si es así sera todo un rollo. Bueno no se si me estoy complicando
+> mucho.
+
+Probablemente se están complicando mucho.  El asunto de la asociatividad es solo para decidir qué hacer si en un estado del autómata de prefijos viables LALR(1) que genera PLY tienen la opción de reducir una regla como 'expr : expr TOKEN_MAS expr' o hacer shift de un token de tipo 'TOKEN_MAS' que detectan espiando el siguiente token de la entrada.  Hacerlo con asociatividad izquierda o derecha afecta la estructura de árbol que se genera; por ejemplo, con asociatividad izquierda, la expresión
+        1 + 2 + 3
+debe interpretarse como equivalente a
+        (1 + 2) + 3
+y generaría un subárbol como
+        Sum(Sum(Number(1), Number(2)), Number(3))
+.  Observen que los paréntesis están a la izquierda, y observen también que el campo de la clase "Sum" que tiene cosas que tienen cosas que tienen cosas que tienen cosas es el que representa al operando izquierdo.  Podrían verse tentados a hacer algo como
+        Sum([Number(1), Number(2), Number(3)])
+, pero esto sería, al menos para este lenguaje, un error: piensen en lo que significaría para una expresión como
+        5 + 7 + "hola"
+.  Esta expresión debería evaluarse como "12hola" porque se representa como, por ejemplo,
+        Sum(Sum(Number(5), Number(7)), String('hola'))
+.  Con la representación que usa una lista, ¿cómo saben la manera en la que se tendría que convertir esa lista de términos sumados en un resultado?  Sí, es cierto que simplemente podrían reducirla desde la izquierda (como un foldl), pero eso es lo mismo que usar la expresión anidada, así que no se compliquen y déjenlo anidado.
+
+> Una expresión válida dentro de las listas también incluye cosas con el
+> operador tby cierto ? . En cuanto a este operador lo que va a su derecha
+> siempre es una lista de variables? Sea:
+> 1. De la forma explicita [i,y,j] en donde las variables representan Todos
+> enteros o Todos cadenas de caracteres (Ya que las listas deben
+> ser homogéneas).
+> 2.  "L" una variable de tipo lista. En este caso la lista es de enteros o
+> strings entonces no serviría verdad?
+> 3. Una concatenación de listas.
+> 4. Algo de la forma [a+b,c]
+> 5. cuantificadores supongo que no, ya no pueden formar una lista de
+> Variables.
+
+El operador "tby" puede recibir cualquier expresión en cualquiera de sus dos operandos, el tipo de la expresión resultante es el tipo de la expresión que tiene del lazo izquierdo.  Es perfectamente válido, aunque un poco extraño, escribir
+        (1 + 4) tby [a + b, c]
+siempre que "a" y "b" sean variables que estén declaradas como es debido en alguna parte, que sean de dos tipos con los que se pueda hacer alguna cosa con la operación '+', y tales que el resultado de esa operación '+' sea del mismo tipo de "c".  Lo extraño es, primero, que el resultado de evaluar eso siempre, siempre, siempre será un '5' así que en la mayoría de los contextos (pero no en todos) hacer eso es inútil.  También es extraño porque usar esa expresión complicada impone restricciones inusuales sobre lo que pueden ser esos tipos; en cambio,
+        (((1 + 4) tby a) tby b) tby c
+no pone restricción alguna sobre los tipos de "a", "b" y "c" para que esa expresión sea válida (salvo que no pueden ser tablas, porque el único contexto en el que puede aparecer el nombre de una tabla sin nada adicional en una expresión es si se está concatenando con un string).  Para hacerlo aun más irrestricto podría usarse un truco como
+        (((1 + 4) tby (a + "")) tby (b + "")) tby (c + "")
+Igual estos detalles del lenguaje son bastante esotéricos; lo importante es que en cualquiera de los operandos del operador binario "tby" puede estar cualquier expresión válida.
+
+> Esto me confunde ya que cuando se forma una lista lo que eso representa en
+> realidad es una lista de enteros o strings entonces si tengo :
+> a:= 5
+> b:= 6
+> Entonces cada vez que se tenga la lista [a,b] no se interpreta como la lista
+> [5,6] ?
+
+Se interpreta como una expresión de lista literal cuyos elementos son la expresión de intentificador "a" y la expresión de identificador "b".  No están evaluando.  No están evaluando!  NO están evaluando!!!! :)  Solo deben representar lo que ahí dice, y si esas expresiones dependen de una variable, entonces un cambio en esa variable requiere que vuelvan a ejecutar el cálculo de lo que está en el lado izquierdo (y asignar el resultado en caso de que haya que hacerlo, y recalcular todo lo que dependiera de ese resultado, etc etc etc).  Igual estas son consideraciones para la última entrega pues.
+
+> Además en el lenguaje no hay ningún tipo Booleano y en la parte de
+> cuantificadores se pueden colocar operadores Booleanos eso quiere decir que
+> hay listas de Booleanos no ? Sin embargo tampoco mencionan que las listas
+> pueden ser de ese tipo.
+
+Esta observación es la más interesante que me han hecho sobre el lenguaje.  Los felicito por su capacidad de análisis de lenguajes y les recomiendo que cursen la cadena de lenguajes! :)  Dicho eso, hay que ver cómo resolvemos este asunto.  La especificación, en efecto, dice en su sección 2 que
+        El lenguaje va a manejar tres tipos de datos: enteros, cadenas de caracteres, listas y tablas.
+En la sección 2.3, donde se definen las listas, dice que <<EOF
+Las listas son colecciones homogéneas (de tamaño variable) de elementos. Una lista se puede definir como colecciones
+de elementos encerrados entre corchetes y separados por comas, o mediante listas por comprensión, cuya sintaxis
+es:
+        [% variable : lista : expresion %]
+donde cada elemento de la lista resultante es la evaluación de la expresion a cada elemento de lista (asociado a
+variable). Su idenitifcador de tipo es list of x, donde x es int o string.
+EOF
+Lo único que sabemos es que si definimos una variable de tipo lista, debemos declarar cuál será el tipo de los elementos de esa lista, y solo podemos declarar esto último como enteros o cadenas de caracteres.  Pero ¿todo objeto representado en el lenguaje debe tener un identificador de tipo asociado, o los identificadores de tipo son solo cosas que nos permiten declarar variables de un cierto tipo?  ¿Tiene sentido la frase "el identificador de tipo de 'true'"?  Si es así, pareciera que no se define en la especificación.  Si no es así porque los objetos del lenguaje 'true' y 'false' no tienen un identificador de tipo al igual que los resultados de expresiones como '5 == 4', quizás porque los identificadores de tipo se definen solo para variables porque son simplemente cosas usadas para declararlas, entonces tenemos un gran problema, porque pareciera que tenemos operaciones definidas muy específicamente (el cuantificador existencial y el universal) que no pueden aplicarse a nada.
+
+La manera que yo usaría y que les recomiendo para resolver este problema es que realicen en su proyecto una extensión del lenguaje, siguiendo el ejemplo de muchos de los compiladores para lenguajes definidos por estándares que ustedes usan a cada rato.  C, por ejemplo, es un lenguaje definido por un documento de estandarización producido por la ISO, y luego proyectos como GCC implementan esos estándares pero no los siguen estrictamente, sino que implementan extensiones (opcionales, en el caso de GCC) que hacen que el lenguaje que implementaron realmente sea otro, así que habrá leves incompatibilidades y diferencias, pero muchas veces estas extensiones añaden claridad y poder expresivo al lenguaje, resuelven ambigüedades, y las incompatibilidades que introducen son poco importantes.
+
+En este caso, lo que yo haría es extender el lenguaje para que se puedan manejar directamente objetos de tipo booleano al mismo nivel que los otros tipos que pueden manejarse en casi cualquier parte.  Es decir, tendrían que introducir una palabra reservada para especificar su tipo, que podría ser "bool" o "boolean", y además deberían permitir manejar listas de booleanos.  Si extienden el lenguaje de esta manera, se vuelve posible, además, realizar con mayor claridad muchas revisiones importantes sobre tipos, como, por ejemplo, darle sentido a la expresión "4 = 5 = 6" (que sería inválida, claro, porque "4 = 5" tiene un resultado booleano, así que luego tendrían que hacer algo como "false = 6" pero en la especificación sí dice explícitamente que el "=" es un operador de comparación de enteros).
+
+En fin, con todo esto quiero que vean un poco más allá del simple hecho de que hay un problema con los booleanos, y que piensen en que están implementando un lenguaje especificado con un documento de especificación formal.  Todo lo que el documento no especifique de una u otra manera puede ser hecho de la manera que ustedes quieran, y además es perfectamente válido (y muy común en el mundo de los lenguajes de programación) salirse muy ligeramente de lo que dicen los estándares para lograr una implementación que tenga sentido o que sea superior.  Claro, tienen que hacer esto solo cuando sea estrictamente necesario o cuando obtengan beneficios realmente importantes al definir alguna extensión o salirse del estándar, porque hay consecuencias: por ejemplo, según la especificación original, podría hacer una variable llamada "bool" o "boolean", pero si implementan una extensión como esta, un programa así que sea en todo otro sentido válido sería rechazado por su implementación.  Pueden tomar algún desvío para evitar esto: por ejemplo, decir que usan la misma palabra reservada "true" en un contexto como
+        {% b : true := false %}
+En este caso su implementación extendida no rechazaría ningún programa válido bajo la especificación, pero sí aceptarían programas que según la especificación deberían tomarse como inválidos.  Estos problemas son inevitables con cualquier extensión de un lenguaje de programación, pero en este caso, me parece perfectamente razonable que lo extiendan, y sinceramente creo que la especificación publicada debió incluir un tipo booleano y que debe haber sido una omisión accidental.  Insisto en que esto es parte del trabajo diario en el área de lenguajes de programación: de hecho, es bastante común que las extensiones implementadas en implementaciones de lenguajes definidos por estándares luego se conviertan en parte de versiones actualizadas de los estándares.  Con C y C++ esto pasa a cada rato!

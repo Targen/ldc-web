@@ -1,0 +1,22 @@
+/* rows */
+row0 = 14 * $ksz_half_x   + 13 * $sp + 26 * $hsz
+row1 = 13 * $ksz_normal_x + 13 * $sp + 26 * $hsz + $ksz_tab_delete_x
+row3 = 2 * $ksz_capslock_return + 12 * $sp + 24 * $hsz + 11 * $ksz_normal_x
+row4 = 2 * $ksz_shift_x + 10 * $ksz_normal_x + 11 * $sp + 22 * $hsz
+row5 = $ksz_space_x + 2 * $ksz_alt_x + 4 * $ksz_ctrl_apple_x + 6 * $sp + 12 * $hsz
+
+/* eqns */
+row0 == row1 == row2 == row3 == row4 == row5
+$ksz_tab_delete_x + $hsz + $sp / 2.0 == 1.5 * $ksz_normal_x + 2.0 * $hsz + $sp
+$ksz_ctrl_apple_x == $ksz_tab_delete_x
+$ksz_space_x == 6 * $ksz_normal_x + 5 * $sp + 10 * $hsz
+
+/* solved */
+float $ksz_tab_delete_x    = 1.50 * $ksz_normal_x +  1.0 * $hsz + 0.50 * $sp;
+float $ksz_ctrl_apple_x    = 1.50 * $ksz_normal_x +  1.0 * $hsz + 0.50 * $sp;
+float $ksz_space_x         = 6.00 * $ksz_normal_x + 10.0 * $hsz + 5.00 * $sp;
+float $ksz_capslock_return = 1.75 * $ksz_normal_x +  1.5 * $hsz + 0.75 * $sp;
+float $ksz_shift_x         = 2.25 * $ksz_normal_x +  2.5 * $hsz + 1.25 * $sp;
+float $ksz_alt_x           = 1.25 * $ksz_normal_x +  0.5 * $hsz + 0.25 * $sp;
+
+float $ksz_half_x          = (14.5 * $ksz_normal_x + 1.0 * $hsz + 0.5 * $sp) / 14.0;

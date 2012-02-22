@@ -1,0 +1,52 @@
+> 1)   Con rexpecto a la creacion  del arbol sintactico en el proyecto...
+>    Con este ejemplo :  casa : int := 1+3*4+3/5 el arbol sintactico
+> correspondiente es:
+>  (+,(+,1,(*,3,4)) , (/,3,5))
+
+Esa es una representación textual correcta (y buena/bonita; parece LISP) del subárbol que representa la expresión que está en la asignación.
+
+> o tengo q agregar tambien la variable y la
+> asignacion al arbol? es decir :
+>      (:= ,  casa , (+, (+ , 1 , (* , 3 , 4)) , ( / , 3 , 5))) 
+> en otras palabras el arbol sintactico SOLO contiene expresiones? digase fby,
+> tby , sumas , restas , etc.
+
+Los árboles sintácticos de expresiones contienen solo subárboles que representan expresiones.  Pero los árboles sintácticos de otras cosas representan, al menos en la raíz, otras cosas.
+
+> y nada de asignaciones ni if ?
+
+Mosca: la estructura condicional es un tipo de expresión!  La sección 3.4 de la especificación dice <<EOF
+Se tiene un operador de selección, de la forma:
+        if condicion then expresion1 else expresion2
+que se evalúa de la siguiente forma: si condicion se cumple, entonces el resultado de esta expresión es el valor de expresion1; en caso contrario, el valor resultante es expresion2.
+EOF
+Esta expresión es perfectamente válida si ha sido declarada previamente una variable llamada "x" de tipo entero:
+        3 + if x > 6 then 1 else 2 + 7
+En caso de que la variable tenga un valor que NO sea estrictamente mayor que 6, la expresión tendría el valor numérico 12.  Si la variable tiene un valor que SÍ sea estrictamente mayor que 6, entonces, según la precedencia que decidan aplicar para la estructura condicional relativa a las de, en particular, la suma, esta expresión tendría el valor numérico 11 o el valor numérico 4.  El enunciado no especifica cómo debe ser la precedencia de la expresión condicional, así que deben tomar una decisión para su implementación.  Lo típico es que estas estructuras tengan una precedencia menor que la de los operadores aritméticos y demás, pero al final es una decisión que ustedes deben tomar como ustedes quieran porque la especificación del lenguaje no lo define.
+
+> ¿Como seria un
+> arbol valido para un condicional?
+
+Siguiendo una notación similar a la que usaron en lo que me enviaron, podrían, por ejemplo, poner algo así para la expresión que escribí allá arriba (con precedencia del condicional menor que la del '+'):
+        (+, (num, 3), (if, (>, (var, 'x'), (num, 6)), (num, 1), (+, (num, 2), (num, 7))))
+
+> y si es el caso de q tambien contenga la asignacion... como seria el arbol
+> correspondiente a las asignaciones multiples del lenguaje?
+
+Las asignaciones siempre llevan dos listas: una con las declaraciones de las variables que se van a asignar, y otra con las expresiones usadas para calcular sus valores.  Si tienen, por ejemplo, el tag de ShinyEL
+        {% n:int, s:string := 1+2, "hola" + 3 %}
+podrían generar un árbol sintáctico abstracto para ese tag que se pueda representar como texto así:
+        ShinyTag(Assignment([Declaration(Identifier('n'), IntType()), Declaration(Identifier('s'), StringType())], [Sum(Number(1), Number(2)), Sum(String("hola"), Number(3))]))
+
+>
+> 2) Como evaluaran nuestros arboles? es decir, hay q mostrarlos por pantalla?
+> yo para mostrarlos por pantalla utilizo print yacc.parse('{% casa : int :=
+> 1+3*4+3/5 %}')  y en consola se
+> genera el arbol correspondiente (q es el mismo de la duda 1) ).
+> Obviamente yo estoy usando el yacc.parse para ver si mis arboles estan
+> correctos y a parte les paso yo mismo el input... pero como seria para la
+> entrega del proyecto? porq tengo entendido q ustedes tendran casos de prueba
+> q son programas escritos en shinyEL... de ser asi... como les pasamos la
+> linea de codigo q leemos, al parse para q cree nuestro arbol?
+
+Esa manera de trabajar es la correcta, excepto que, en efecto, lo que será pasado a sus programas será el nombre de un archivo cuyo contenido se parece a los de los ejemplos: son documentos HTML válidos a los que en algunos puntos se les insertaron tags de ShinyEL también válidos.  Tienen que encontrar todos esos tags de ShinyEL, pasarles el texto completo al parser para obtener el árbol generado por cada uno, y luego mostrarlo por la cónsola.  Para el resto del archivo que no sea tags de ShinyEL, tendrán que hacer para esta entrega una representación intermedia que les permita en la segunda entrega construir el archivo HTML que su compilador deberá generar.

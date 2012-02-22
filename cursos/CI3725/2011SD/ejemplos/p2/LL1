@@ -1,0 +1,156 @@
+Lenguaje:
+Las expresiones lógicas (predicados) que incluyen a los átomos 't' (true) y 'f' (false), el operador de conjunción '∧', el operador de negación '¬' y la asociación con paréntesis ('(' y ')'), todo con las reglas normales de sintaxis de los predicados lógicos.  La palabra vacía se considera un predicado válido (esto es parte de la definición; NO es algo que se deduce).
+
+
+
+Gramática intuitiva inicial:
+S' → λ | B
+B  → B ∧ B | ¬ B | t | f | ( B )
+Esta gramática es ambigua.  Como estamos tratando con un lenguaje de expresiones algebráicas con operadores que tienen asociadas precedencias y demás, podemos aplicar la técnica usual para desambiguar estos casos.
+
+
+
+El resultado de este proceso:
+S' → B | λ
+B  → B ∧ C | C
+C  → ¬ C | F
+F  → t | f | ( B )
+Esta gramática tiene recursión izquierda en el símbolo B, así que no puede ser fuertemente LL(1).
+
+
+
+Se realiza el proceso de eliminación de recursión izquierda:
+S' → B | λ
+B  → C X | C
+X  → ∧ C X | ∧ C
+C  → ¬ C | F
+F  → t | f | ( B )
+Esta gramática tiene símbolos no terminales tales que existen dos producciones distintas con ese no terminal a la izquierda, y que sus lados derechos tienen algún prefijo común no vacío.
+
+
+
+Aplicamos factorización izquierda:
+S' → B | λ
+B  → C X'
+C  → ¬ C | F
+F  → t | f | ( B )
+X  → ∧ C X'
+X' → X | λ
+
+
+
+Pareciera que ahora podemos intentar calcular los First y Follow.  Primero, extrayendo toda la información de la gramática, obtenemos las relaciones que nos permitirán calcularlos:
+   ┏━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃First                    ┃Follow                                    ┃
+┏━━╋━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃S"┃¬ t f ( ) $              │          $                               ┃
+┣━━╉─────────────────────────┼──────────────────────────────────────────┨
+┃S'┃¬ t f ( ) $              │          $                               ┃
+┣━━╉─────────────────────────┼──────────────────────────────────────────┨
+┃B ┃¬ t f ( )                │        ) $                               ┃
+┣━━╉─────────────────────────┼──────────────────────────────────────────┨
+┃C ┃¬ t f ( )                │            First(X') Follow(B) Follow(X) ┃
+┣━━╉─────────────────────────┼──────────────────────────────────────────┨
+┃F ┃  t f ( )                │¬ t f ( ) $ Follow(C)                     ┃
+┣━━╉─────────────────────────┼──────────────────────────────────────────┨
+┃X'┃        )   ∧ Follow(X') │¬ t f ( ) $ Follow(B) Follow(X)           ┃
+┣━━╉─────────────────────────┼──────────────────────────────────────────┨
+┃X ┃        )   ∧            │¬ t f ( ) $ Follow(X')                    ┃
+┗━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+
+
+A partir de esta tabla podemos calcular los First y Follow definitivos usando un simple método de punto fijo:
+   ┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━┓
+   ┃First        ┃Follow       ┃
+┏━━╋━━━━━━━━━━━━━╇━━━━━━━━━━━━━┫
+┃S"┃¬ t f ( ) $  │          $  ┃
+┣━━╉─────────────┼─────────────┨
+┃S'┃¬ t f ( ) $  │          $  ┃
+┣━━╉─────────────┼─────────────┨
+┃B ┃¬ t f ( )    │        ) $  ┃
+┣━━╉─────────────┼─────────────┨
+┃C ┃¬ t f ( )    │        ) $ ∧┃
+┣━━╉─────────────┼─────────────┨
+┃F ┃  t f ( )    │        ) $ ∧┃
+┣━━╉─────────────┼─────────────┨
+┃X'┃        ) $ ∧│        ) $  ┃
+┣━━╉─────────────┼─────────────┨
+┃X ┃        )   ∧│        ) $  ┃
+┗━━┻━━━━━━━━━━━━━┷━━━━━━━━━━━━━┛
+
+
+
+Ahora, para construir la tabla, enumeramos las reglas de la gramática:
+( 1) S" → S' $
+( 2) S' → B
+( 3) S' → λ
+( 4) B  → C X'
+( 5) C  → ¬ C
+( 6) C  → F
+( 7) F  → t
+( 8) F  → f
+( 9) F  → ( B )
+(10) X' → X
+(11) X' → λ
+(12) X  → ∧ C X'
+
+
+
+Calculando los conjuntos Lookahead de cada regla con la fórmula
+        First₁(A → ω) = First₁(First(ω)·Follow(A))
+construimos la tabla para el parser LL(1):
+   ┏━━┳━━┳━━┳━━┳━━┳━━┳━━┓
+   ┃ ¬┃ t┃ f┃ (┃ )┃ $┃ ∧┃
+┏━━╋━━╇━━╇━━╇━━╇━━╇━━╇━━┫
+┃S"┃ 1│ 1│ 1│ 1│  │ 1│  ┃
+┣━━╉──┼──┼──┼──┼──┼──┼──┨
+┃S'┃ 2│ 2│ 2│ 2│  │ 3│  ┃
+┣━━╉──┼──┼──┼──┼──┼──┼──┨
+┃B ┃ 4│ 4│ 4│ 4│  │  │  ┃
+┣━━╉──┼──┼──┼──┼──┼──┼──┨
+┃C ┃ 5│ 6│ 6│ 6│  │  │  ┃
+┣━━╉──┼──┼──┼──┼──┼──┼──┨
+┃F ┃  │ 7│ 8│ 9│  │  │  ┃
+┣━━╉──┼──┼──┼──┼──┼──┼──┨
+┃X'┃  │  │  │  │11│11│10┃
+┣━━╉──┼──┼──┼──┼──┼──┼──┨
+┃X ┃  │  │  │  │  │  │12┃
+┗━━┻━━┷━━┷━━┷━━┷━━┷━━┷━━┛
+
+
+
+Un ejemplo de palabra del lenguaje es
+        t∧(¬f∧f)∧t
+y se puede derivar así:
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
+┃    Entrada┃Pila            ┃Forma sentencial                     ┃Acción               ┃
+┣━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┫
+┃t∧(¬f∧f)∧t$│S"              │S"                                   │Regla  1: S" → S' $  ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃t∧(¬f∧f)∧t$│$ S'            │S' $                                 │Regla  2: S' → B     ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃t∧(¬f∧f)∧t$│$ B             │B $                                  │Regla  4: B  → C X'  ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃t∧(¬f∧f)∧t$│$ X' C          │C X' $                               │Regla  6: C  → F     ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃t∧(¬f∧f)∧t$│$ X' F          │F X' $                               │Regla  7: F  → t     ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃t∧(¬f∧f)∧t$│$ X' t          │t X' $                               │Consumir 't'         ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃ ∧(¬f∧f)∧t$│$ X'            │t X' $                               │Regla 10: X' → X     ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃ ∧(¬f∧f)∧t$│$ X             │t X                                  │Regla 12: X  → ∧ C X'┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃ ∧(¬f∧f)∧t$│$ X' C ∧        │t ∧ C X' $                           │Consumir '∧'         ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃  (¬f∧f)∧t$│$ X' C          │t ∧ C X' $                           │Regla 6: C  → F      ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃  (¬f∧f)∧t$│$ X' F          │t ∧ F X' $                           │Regla 9: F  → ( B )  ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃  (¬f∧f)∧t$│$ ) B (         │t ∧ ( B ) X' $                       │Consumir '('         ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃   ¬f∧f)∧t$│$ ) B           │t ∧ ( B ) X' $                       │Regla 4: B  → C X'   ┃
+┠───────────┼────────────────┼─────────────────────────────────────┼─────────────────────┨
+┃   ¬f∧f)∧t$│$ ) X' C        │t ∧ ( C X' ) X' $                    │  ...etc etc etc...  ┃
+┗━━━━━━━━━━━┷━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━┛

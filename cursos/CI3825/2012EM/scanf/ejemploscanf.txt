@@ -1,0 +1,38 @@
+/*
+Nombre del Archivo: ejemplofile.c
+Función: Un ejemplo muy sencillo para ilustrar la lectura de archivos con el fscanf. 
+Autor: M. Curiel
+Uso: ejemplofile archivo 
+     Se puede probar con el archivo data1 que tiene el formato requerido.
+
+*/
+
+
+#include <stdio.h>
+#define MAXNOMBRE 100
+
+
+int main(int argc, char *argv[]) 
+ {
+     char nom[MAXNOMBRE];
+     FILE *fp;
+     int i, k, edad=0, tiempo=0;
+
+
+     /* Una forma de leer */
+     fp = fopen(argv[1], "r");
+     i = 0;
+
+     while (!feof(fp)) {
+       fscanf(fp, "%d,%d,%s", &edad, &tiempo, nom);
+       printf("%d, %d, %s\n", edad, tiempo, nom);
+           
+     }
+     
+  
+      fclose(fp); 
+      return(0); 
+
+
+
+}

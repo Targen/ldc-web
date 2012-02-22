@@ -1,0 +1,181 @@
+body{
+font: normal small Arial, Helvetica, sans-serif;
+color:#ffffff;
+text-align:justify;
+font-size:13px;
+margin-top:10px;
+margin-left:112px;
+margin-right:0px;
+margin-bottom:10px;
+background-color:#f8c8c8;
+background-image:url(../images/clouds.jpg); background-repeat:repeat-x;
+}
+#border
+{width:779px;
+background-color:#380F12;
+float:left;}
+#left
+{float:left;
+width:198px;}
+#right
+{width:581px;
+float:left;}
+#rc1
+{background-image:url(../images/c.jpg); background-repeat:no-repeat;
+width:10px;
+height:100px;
+float:left;}
+#logo_bg
+{width:561px;
+float:left;
+background-image:url(../images/logo-bg.gif); background-repeat:repeat-x;
+height:100px;}
+#rc2
+{background-image:url(../images/rc2.jpg); background-repeat:no-repeat;
+width:10px;
+height:100px;
+float:left;}
+.name
+{font-size:32px;
+font-family:"Century Gothic", "Trebuchet MS", "Arial Narrow", Arial, sans-serif;
+color:#FE5265;
+text-transform:uppercase;
+padding-top:18px;
+padding-bottom:6px;
+padding-left:10px;
+}
+.name2
+{color:#ffffff;}
+.tag
+{color:#ffffff;
+text-transform:uppercase;
+font-size:11px;
+padding-left:13px;
+font-weight:bold;}
+#wedding
+{width:198px;
+background-image:url(../images/kirby.png); background-repeat:no-repeat;
+height:302px;
+padding-bottom:20px;}
+#nosotros
+{width:198px;
+background-image:url(../images/nosotross.png); background-repeat:no-repeat;
+height:290px;
+padding-bottom:0px;}
+#desafio
+{width:198px;
+background-image:url(../images/desafio.png); background-repeat:no-repeat;
+height:290px;
+padding-bottom:0px;}
+#enlaces
+{width:198px;
+background-image:url(../images/enlaces.png); background-repeat:no-repeat;
+height:290px;
+padding-bottom:0px;}
+#galeria
+{width:198px;
+background-image:url(../images/galeria.png); background-repeat:no-repeat;
+height:290px;
+padding-bottom:0px;}
+#videos
+{width:198px;
+background-image:url(../images/videos.png); background-repeat:no-repeat;
+height:290px;
+padding-bottom:0px;}
+#entrega1
+{width:198px;
+background-image:url(../images/entrega1.png); background-repeat:no-repeat;
+height:290px;
+padding-bottom:0px;}
+#entrega2
+{width:198px;
+background-image:url(../images/entrega2.png); background-repeat:no-repeat;
+height:290px;
+padding-bottom:0px;}
+.sap
+{height:1px;
+font-size:1px;
+width:196px;
+background-image:url(../images/sap.gif); background-repeat:repeat-x;
+}
+.leftlinks
+{color:#FFD19D;
+font-family:tahoma;
+font-size:11px;
+line-height:35px;
+padding-left:20px;
+}
+.leftlinks a
+{color:#FFD19D;
+font-family:tahoma;
+font-size:11px;
+text-decoration:none;
+}
+.leftlinks a:hover
+{color:#FF6879;}
+#main
+{width:581px;}
+#heading
+{background-color:#FE5265;
+height:35px;
+line-height:35px;
+clear:left;
+padding-left:10px;
+color:#ffffff;
+font-weight:bold;
+text-transform:uppercase;
+width:571px;}
+#heading2
+{background-color:#FF8391;
+height:15px;
+font-size:1px;
+width:581px;}
+#content
+{padding-left:10px;
+padding-top:10px;
+padding-bottom:10px;
+background-color:#FE5265;
+padding-right:10px;}
+a{color:#821119;
+text-decoration:underline;}
+a:hover{color:#821119;
+text-decoration:none;}
+.bottomlinks
+{width:111px;
+text-align:center;
+float:left;
+color:#ffffff;}
+.bottomlinks a
+{text-decoration:none;
+color:#ffffff;}
+.bottomlinks a:hover
+{color:#821119;}
+#rc3
+{background-image:url(../images/rc3.gif); background-repeat:no-repeat; background-position:bottom;
+width:11px;
+background-color:#FF6B7B;
+height:51px;
+font-size:1px;
+float:left;}
+#rc4
+{background-image:url(../images/rc4.gif); background-repeat:no-repeat; background-position:bottom;
+width:11px;
+font-size:1px;
+background-color:#FF6B7B;
+height:51px;
+float:left;}
+#bottom
+{height:51px;
+float:left;
+width:559px;
+background-color:#FF6B7B;
+line-height:51px;}
+#quick-head
+{height:35px;
+font-size:11px;
+font-family:tahoma;
+text-transform:uppercase;
+padding-left:20px;
+line-height:35px;
+font-weight:bold;
+color:#FF6879;}

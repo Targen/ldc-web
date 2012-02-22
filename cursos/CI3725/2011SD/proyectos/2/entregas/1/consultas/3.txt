@@ -1,0 +1,19 @@
+> Hola Manuel, Quería saber si para la primera entrega era valido permitir en
+> las producciones del parser errores contextuales del lenguaje para luego así
+> en la segunda entrega simplemente poder tratar estos errores en cada
+> producción, o si mas bien se busca que en la primera entrega las
+> producciones cumplan con un contexto correcto del lenguaje y en caso de que
+> la entrada del parser no se pueda consumir se deje que ocurra el error del
+> parser?
+>
+
+Una cosa que deberían tener en cuenta es que el documento que especifica las entregas del proyecto dice explícitamente que el manejo de errores no será evaluado de ninguna manera en la primera entrega.  Más allá de eso, tu lexer debería ser capaz, eventualmente, de manejar errores léxicos (que tienen que ver con la aparición en los tags de ShinyEL de símbolos que no son válidos en ninguna parte en el lenguaje), y el parser debería ser capaz de manejar errores sintácticos que pueden ser de dos tipos: los que pueden ser detectados y vale la pena detectar usando la gramática, y los demás errores que pueden ser detectados de alguna manera haciendo análisis estático (en tiempo de compilación) simple del código.
+
+Los errores nunca los van a querer manejar a nivel de los atributos (el código) que asocian a cada producción.  En cambio, los errores propios de la gramática se van a detectar en el proceso de reconocimiento usando la tabla LALR(1) (que se parece bastante a la tabla SLR(1) dada en clase) y eso no lo manejarán ustedes directamente, porque el generador de parser se encarga de eso, y en este curso no tienen que hacer que el parser se recupere de esos errores de ninguna manera: eso se hace en la cadena de lenguajes.
+
+Los errores de contexto, por su parte, se detectan luego de haber concluido toda la construcción de todos los árboles sintácticos abstractos de cada tag de ShinyEL presente en la entrada.  Para detectarlos deben construir la tabla de símbolos (que tengo entendido que es una de las cosas que deben hacer para esta entrega).  Luego, cuando tienen esa tabla, pueden revisar todas las expresiones, declaraciones y demás estructuras del lenguaje que aparecen en cada uno de los árboles que construyeron, y asegurarse de que, entre otras cosas, toda variable es usada en un contexto en el que es válido usarla.  En todo caso esto es para la segunda entrega, así que no se preocupen mucho por eso por ahora.
+
+> Otra pregunta, el hacer el lexer vale 3 puntos como cuando las entregas del
+> lexer y el parser eran separadas?
+
+Por desgracia no tengo información alguna en absoluto sobre cómo van a ser los criterios de corrección para esta entrega. :(  Si me entero de algo antes de la fecha de entrega lo publicaré tan pronto como pueda, pero es extremadamente improbable.

@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+                <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+                <title>Notas de Manuel Gómez sobre CI3725 - Chequeos de tipos para la segunda entrega del proyecto 2</title>
+                <style type="text/css">p { text-align:justify; }</style>
+        </head>
+
+        <body>
+                <h1><a href="index.html">Notas de Manuel Gómez sobre CI3725</a></h1>
+                <hr/>
+                <h2>2011-12-10 (semana 12): Chequeos de tipos para la segunda entrega del proyecto 2</h2>
+                <p>Disculpen que no haya escrito más nada por acá.  He estado ocupadísimo.  Sí, ya sé que he comenzado casi todas estas publicaciones de la misma manera, pero de verdad no me ha sido posible publicar más nada.  He estado viendo materias insoportablemente trabajosas y tediosas que no me dejan tiempo para escribir más por acá sobre los proyectos.  Y sé que es un poco tarde para sugerencias (considerando que la entrega, postergada ya, es para esta noche), pero igual quizás esto les sirva de algo.  Les dejo por acá un ejemplo de cómo sería una corrida hasta la parte de verificación estática de correspondencia de tipos para el lenguaje.  Como siempre, todo lo que dice acá son sugerencias y recomendaciones, y de ninguna manera constituyen requerimientos para el proyecto, aunque algunas de las indicaciones son soluciones posibles a cosas que sí son requeridas; cualquier contradicción entre lo que acá dice y lo que la especificación dice (o deja de decir) es error mío y lo único que es ley es el enunciado y los requerimientos de la entrega que ya se han publicado en otras partes.</p>
+                <blockquote>
+                        <pre>
+Supongan que tienen un archivo de entrada con estos tags:
+    {%= (a - 15) * 57 %}
+    {% a : int, b : string := 42, "hola" %}
+    {% c : list of int := [% b : [2, len(b)] : b ** 3 %] %}
+
+Las verificaciones que deben hacer deberían en principio seguir un flujo de ejecución similar a este:
+
+Parsear todos los tags:
+    Parsear el primer tag (retorna su árbol).
+    Parsear el segundo tag (retorna su árbol).
+    Parsear el tercer tag (retorna su árbol).
+Tengo todos los árboles.
+
+Calcular la tabla de símbolos global:
+    Pedirle al primer árbol su tabla de símbolos:*
+        El tag no es de asignación: no se definen símbolos.
+    Pedirle al segundo árbol su tabla de símbolos:*
+        Se define "a" como "int".
+        Se define "b" como "string".
+    Pedirle al tercer árbol su tabla de símbolos:*
+        Se define "c" como "list of int".
+    Se unen todas las tablas de símbolos por tag en una sola.**
+Tengo la tabla de símbolos unificada para todos los tags ("global").
+
+Hacer verificaciones de tipo sobre cada expresión de cada árbol:
+    Se pasa la tabla de símbolos global al check del primer árbol:
+        Se pasa la tabla al check de la primera expresión:
+            Multiplicación:
+            Se pasa la tabla al check del operando izquierdo:
+                Resta:
+                Se pasa la tabla al check del izquierdo:
+                    Identificador "a":
+                    Busco "a" en la tabla que me pasaron.
+                    Existe y dice que "a" es de tipo "int".
+                    Retorno "int".
+                El operando izquierdo es "int".  Bien.
+                Se pasa la tabla al check del derecho:
+                    Entero 15.
+                    Retorno "int".
+                El operando derecho es "int".  Bien.
+                La resta retorna "int".
+            El operando izquierdo es "int".  Bien.
+            Se pasa la tabla al check del operando derecho:
+                Entero 57.
+                Retorno "int".
+            El operando derecho es "int".  Bien.
+            Retorno "int".
+        El tipo inferido de la primera expresión es "int".
+    El primer tag está bien.
+    Se pasa la tabla de símbolos global al check del segundo árbol:
+        La primera expresión tiene tipo declarado "int".
+            Se pasa la tabla al check de la primera expresión:
+                Entero 42.
+                Retorno "int".
+            El tipo inferido de la primera expresión es "int".
+        El tipo inferido es igual al tipo declarado.  Bien.
+        La segunda expresión tiene tipo declarado "string".
+            Se pasa la tabla al check de la primera expresión:
+                Cadena de caracteres "hola".
+                Retorno "string".
+            El tipo inferido de la primera expresión es "string".
+        El tipo inferido es igual al tipo declarado.  Bien.
+    El segundo tag está bien.
+    Se pasa la tabla de símbolos global al check del tercer árbol:
+        La primera expresión tiene tipo declarado "list of int".
+            Se pasa la tabla al check de la primera expresión:
+                Lista por comprensión:
+                Se pasa la tabla al check del rango:
+                    Lista literal:
+                    Se pasa la tabla al check del primer elemento:
+                        Entero 2.
+                        Retorno "int".
+                    Se pasa la tabla al check del segundo elemento:
+                        Longitud:
+                        Se pasa la tabla al check del argumento:
+                            Identificador "b":
+                            Busco "b" en la tabla que me pasaron.
+                            Existe y dice que "b" es de tipo "string".
+                            Retorno "string".
+                        Cálculo de longitud de string.  Bien.
+                        Retorno "int".
+                    Todos los elementos dan el mismo tipo.  Bien.
+                    El tipo de los elementos es "int".
+                    Retorno "list of int".
+                El rango es "list of int", que es una lista.  Bien.
+                La variable dummy tomará todos los valores del rango.
+                Los valores del rango son de tipo "int".
+                En la tabla que me pasaron inserto "b" de tipo "int".***
+                Se pasa esa tabla a la expresión de la cuantificación:
+                    Potencia:
+                    Se pasa la tabla al check del operando izquierdo:
+                        Identificador "b":
+                        Busco "b" en la tabla que me pasaron.
+                        Existe y dice que "b" es de tipo "int".
+                        Retorno "int".
+                    El operando izquierdo es "int".  Bien.
+                    Se pasa la tabla al check del operando derecho:
+                        Entero 3.
+                        Retorno "int".
+                    El operando derecho es "int".  Bien.
+                    Retorno "int".
+                La expresión de cuantificación es de tipo "int".
+                Retorno "list of int".
+            El tipo inferido de la primera expresión es "list of int".
+        El tipo inferido es igual al tipo declarado.  Bien.
+    El tercer tag está bien.
+Todos los árboles están bien.
+                        </pre>
+                        <p>* acá pueden detectar el error de tener múltiples definiciones de una misma variable dentro de un mismo tag.</p>
+                        <p>** acá pueden detectar el error de tener múltiples definiciones de una misma variable que se hagan en tags diferentes.</p>
+                        <p>*** acá se olvida que "b" afuera del cuantificador era otra cosa.  La definición global de "b" queda ocultada por la definición local de la variable dummy del cuantificador.  Mosca: no se MODIFICA la tabla original, sino que se crea una copia en la que se cambian cosas.  Tengan cuidado con eso... deben asegurarse de que la tabla que pasan al check de la expresión de cuantificación sea OTRO objeto diferente.  Si no, van a haber sobreescrito la tabla original, y pueden necesitarla para otras cosas que estén fuera de la cuantificación.</p>
+                </blockquote>
+                <p>No hay tiempo para formatearlo bien, así que lo pegué tal cual como lo mandé en el e-mail respondiendo la consulta.  Espero que les sea útil.  Suerte con eso.</p>
+                <hr/>
+                <p>
+                        <a href="http://validator.w3.org/check?uri=referer">
+                                <img src="http://www.w3.org/Icons/valid-xhtml11" alt="Valid XHTML 1.1" height="31" width="88"/>
+                        </a>
+                </p>
+                <p>Y lo escribí a mano en Vim sin más referencia que las primeras 4 líneas del boilerplate.</p>
+                <p>Like a boss.</p>
+        </body>
+</html>

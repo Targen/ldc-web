@@ -1,0 +1,69 @@
+> 1) Nos piden devolver una representación "intermedia" del documento html de
+> entrada.
+> ¿A qué se refieren con esto? ¿se refieren a algún archivo de texto o
+> estructura?
+> 2) Precisamente con respecto a la duda 1: ¿la lectura de los tokens dentro
+> del html
+> debería ignorar toda cosa que no sea de la forma "{% %}"? Ya que
+> posteriormente
+> se nos indica (o sugiere) determinar la posición de cada marca del lenguaje
+> dentro
+> de ese documento original...  ¿cómo podría hacer esto? Se me ocurre que esto
+> pueda saberse directamente con la linea y columna que se guardaría en el
+> lexer,
+> pero me gustaría saber tu opinión.
+
+La representación intermedia es una idea muy sencilla.  Tienen un documento de entrada, que es el código fuente que eventualmente deberán compilar, que contiene algo que se parece mucho a un documento HTML válido cualquiera, pero tiene tags de ShinyEL dentro de los cuales hay cosas escritas en otro lenguaje.  Uno de los archivos que tiene que generar su compilador es un documento HTML que es exactamente igual al original documento HTML con tags de ShinyEL, excepto que los tags de ShinyEL habrán sido sustituidos por un cierto código en HTML generado por cada uno de esos tags.  Además, tienen que generar un segundo archivo que estará escrito en JavaScript y que debe ser incluido en el archivo HTML original.  El hecho es que tienen que tomar su archivo de entrada y encontrar ciertos puntos especiales de interés en los que harán alguna sustitución, o inserción, o algo, y crear alguna estructura de datos que represente completamente eso que tienen que hacer sobre ese archivo de entrada (sin el código generado por cada tag como tal, pero sí indicando dónde iría todo eso).
+
+Hay muchas posibilidades para la representación intermedia.  A mí se me han ocurrido dos, y ahorita leyendo lo que ustedes escribieron se me ocurrió una más.
+
+La primera representación intermedia que se me ocurrió es una lista de cada uno de los pedazos del archivo de entrada entre los cuales debe insertarse algún código generado por el compilador.  Por ejemplo, para la entrada <<EOF
+<html>
+        <head>
+                <title> Calculo de promedio </title>
+        </head>
+        <body>
+                <p> Ingrese un n&uacute;mero: {%= in:int := input %} </p>
+                <p> {%= if count = 0 then "" else "El promedio es: " %}{%= sum / count %} </p>
+                {% sum:int, count:int := 0 fby sum + in, (0 fby count+1) tby in %}
+        </body>
+</html>
+EOF
+podría producirse una representación intermedia que en Python se imprimiria como algo así:
+['<html>\n        <head>', '\n                <title> Calculo de promedio </title>\n        </head>\n        <body>                <p> Ingrese un n&uacute;mero: ', ' </p>\n                <p> ', '', ' </p>\n                ', '\n        </body>\n</html>']
+Y luego tendrían que decir algo como "entre el primer elemento de la lista y el segundo se generará el código HTML para incluir al archivo JavaScript que se generará", y también "entre el segundo y el tercer elemento de la lista se generará código HTML a partir del primer tag de shiny encontrado, que tiene un árbol sintáctico abstracto que se puede representar así: *#$%^@%&#^@%$&^$*&$%^%$&", donde, claro, "*#$%^@%&#^@%$&^$*&$%^%$&" es la representación horrible como string del árbol sintáctico abstracto en caso de que la implementen así.
+
+Otra representación intermedia que se me ocurrió es que dejaran el archivo HTML igual excepto que los tags de ShinyEL se sustituirían por alguna especie de marcador que indique que ahí debe insertarse el código correspondiente a algo.  El problema con este método es que tienen que seleccionar sus marcas con cuidado para que sea imposible interpretar la posición de las marcas con ambigüedad.  Por ejemplo, si deciden poner una marca con el caracter 'a' en la posición donde tienen que poner la inclusión del archivo JavaScript, ¿cómo distinguen esa 'a' especial de la 'a' que aparece en el comienzo de encabezado del HTML (el "<head>"), o el final del mismo, o en el "&uacute;"?  Como esto tiene que funcionar para cualquier entrada válida, y las entradas válidas son tags de ShinyEL en documentos que, salvo por esos tags, son simplemente HTML válido, la única forma de estar seguros de que no habría ambigüedad sería usar como marca una secuencia de caracteres que sea imposible encontrar en un documento HTML válido.  "&&", por ejemplo, cumple esta condición: en HTML válido un caracter '&' debe aparecer seguido del nombre de una entidad SGML[1] válida para el documento en cuestión.  Como '&' no puede ser el inicio del nombre de ninguna entidad SGML, entonces la secuencia "&&" es imposible en HTML válido y pueden usarlo como marca.  Pero con cuidado, claro, porque hay otros problemas potenciales: si hay algo como "&&&amp;" podrían tener que manejar las sustituciones de esas marcas con código con cuidados especiales.  Otra opción que se me ocurre es usar algo como "&(tag 3)" para marcar el lugar donde se tiene que insertar el código generado por el tercer tag de ShinyEL, y siguiendo esa misma idea pueden hacer muchas variaciones de esto que les podrían convenir.  Al final la representación intermedia sería el HTML con las marcas donde van pero sin los tags de ShinyEL, y con un mensaje abajo que dice cuál es la correspondencia entre su representación intermedia y la salida que la segunda entrega deberá generar.
+
+La representación intermedia que se me acaba de ocurrir es simplemente una lista de líneas y columnas, o mejor aun, de offsets en bytes o en caracteres (que no es lo mismo ni es igual) desde el comienzo del archivo procesado (sin los tags) que especificarían dónde debe insertarse el código.  O quizás una lista de rangos de posiciones en el archivo original de entrada, también por byte o por caracter, que deban sustituirse con cada pedazo de código generado en la última entrega.
+
+En fin, la representación intermedia es algo, cualquier cosa, que diga sin ambigüedad dónde tienen que efectuarse cambios en el archivo de entrada para producir el HTML de salida.  No se evaluará la representación intermedia específica que usen, pero deben tener una, sobre todo porque la necesitarán para la segunda entrega.  La idea es que sea la que se les ocurra y se les haga fácil de implementar, y eso depende de la manera de programar de cada grupo.
+
+[1]: lean más sobre esto en <http://en.wikipedia.org/wiki/SGML_entity> o en los estándares incomprensibles donde se definen estas cosas :)
+
+> 3) Nos piden un grafo con el orden de evaluación de las expresiones. ¿Cómo
+> determino
+> ese orden? Para ser más preciso: se me ocurre que las marcas de salida (las
+> que
+> tienen el "=" al principio de la expresión) se ejecutan en el orden en que
+> se encuentren,
+> pero las que no son de salida simplemente podrían ejecutarse en un orden
+> distinto, ¿no
+> es así?
+
+El grafo lo que tiene que representar no es en qué orden se evalúan inicialmente las expresiones, sino las dependencias que existen entre las asignaciones y las expresiones que utilizan variables que son asignadas al final del cálculo de otra expresión.  Es decir, si tengo tags de ShinyEL así
+        {%= n:int = input %}
+        {% s:string := "hola " + n %}
+        {% c:int := len(s) %}
+entonces tendrían que crear un grafo donde diga que cada vez que se haga la asignación de algo leído por input a 'n', debe ejecutarse otra vez el cálculo y la asignación de la expresión
+        "hola " + n
+y que cada vez que se haga la asignación de algo calculado por esa misma última expresión, debe volver a ejecutarse el cálculo y la asignación de la expresión "len(s)".
+
+> 4) ¿Cómo son los comandos para ejecutar esta entrega? En la definición del
+> lenguaje
+> colocan que para llamar al traductor se hace $ shinyc archivo.sel, pero no
+> sé si eso
+> es para cuando el proyecto esté en su fase final.
+>
+
+Usen ese mismo formato.  El compilador que harán al final será básicamente lo mismo que están haciendo ahorita pero con unas cuantas cosas adicionales.
