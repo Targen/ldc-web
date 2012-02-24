@@ -74,14 +74,10 @@
                                         <p>Para facilitarles el manejo de los tiempos, consideren que el parámetro que corresponde al tiempo de simulación de cada atracción, estará dado en segundos y no en ms como se intuye en el ejemplo de prueba del enunciado.</p>
                                         <p>Así cada trabajador dormirá por el tiempo indicado, si usan la llamada al sistema sleep:</p>
                                         <blockquote>
-                                                <pre>
-                                                        <code>
-<![CDATA[
+<pre><code><![CDATA[
 #include <unistd.h>
 unsigned int sleep(unsigned int seconds);
-]]>
-                                                        </code>
-                                                </pre>
+]]></code></pre>
                                         </blockquote>
                                         <p>Saludos</p>
                                         <p>-yudith</p>
@@ -96,13 +92,9 @@ unsigned int sleep(unsigned int seconds);
                                 <blockquote>
                                         <p>Para el proyecto yo utilizo lo siguiente para esperar los hilos que creo:</p>
                                         <blockquote>
-                                                <pre>
-                                                        <code>
-<![CDATA[
+<pre><code><![CDATA[
 pthread_join(trabajadores[i],(void **)&(tiempoCorrida))
-]]>
-                                                        </code>
-                                                </pre>
+]]></code></pre>
                                         </blockquote>
                                         <p>donde: <code>trabajadores</code> es un arreglo --&gt; <code><![CDATA[pthread_t trabajadores[numAtrac];]]></code> y <code><![CDATA[tiempoCorrida]]></code> un apuntador a entero --&gt; <code><![CDATA[int *tiempoCorrida;]]></code></p>
                                 </blockquote>
