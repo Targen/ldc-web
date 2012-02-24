@@ -21,8 +21,8 @@
                         <li><a href="#p2">Espera por la terminación de los trabajadores e impresión de sus resultados  </a></li>
                         <li><a href="#p3">Cierre de <em>file descriptors</em> de <em>pipe</em>s                        </a></li>
                         <li><a href="#p4">Unidades de tiempo y <code>gettimeofday</code> vs. <code>clock_gettime</code></a></li>
-
-
+                        <li><a href="#p5">Pasaje de valores de retorno desde un hilo                                   </a></li>
+                        <li><a href="#p6"><code>pthread_join</code> infinito</a></li>
                 </ol>
                 <ol>
                         <li id="p1">
@@ -89,6 +89,39 @@ unsigned int sleep(unsigned int seconds);
                                 <p>No es inválido que usen <code>gettimeofday</code>; mi sugerencia es para aumentar la calidad y portabilidad de su proyecto, pero no es un requerimiento del enunciado que su programa se ajuste a las recomendaciones de las últimas versiones de POSIX. El requerimiento, si mal no recuerdo, es que funcionen en el LDC. En cualquier caso, POSIX.1‐2008 especifica a <code>gettimeofday</code>, pero indica que las aplicaciones <em>no deberían</em> usarla, no que <em>no deben</em> usarla.</p>
                                 <p>La distinción es sutil: POSIX, al igual que muchísimos otros documentos de estandarización (como RFCs, especificaciones de lenguajes de programación, de protocolos de comunicación, de formatos de archivos, etc) utilizan los términos “should” y “should not”, entre otros, para especificar <em>recomendaciones normativas</em> cuyo cumplimiento no es un requerimiento para ser conforme a la especificación, mientras que usan los términos “must”, “shall”, “must not” y “shall not”, entre otros, para especificar <em>requerimientos normativos</em>, que sí constituyen requerimientos para ser conforme a la especificación. Hay un documento que especifica una de las formas comunes de estas convenciones de documentación y muchos otros se basan en él: <a href="https://www.ietf.org/rfc/rfc2119">RFC 2119</a>. POSIX no hace referencia a este documento, pero en su sección <a href="http://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap01.html#tag_21_01_05">A.1.5</a> define reglas muy similares.</p>
                                 <p>En cualquier caso, el uso de <code>gettimeofday</code> es muy similar al de <code>clock_gettime</code> (y eso no es sorprendente: <code>clock_gettime</code> fue diseñada específicamente para sustituir a <code>gettimeofday</code>, que tenía deficiencias en su diseño relacionadas con el manejo de zonas horarias). Lo importante de este asunto es que manejen el tiempo de cada atracción como una cantidad de <strong>segundos</strong>.</p>
+                        </li>
+                        <li id="p5">
+                                <h3>Pasaje de valores de retorno desde un hilo</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <p>Para el proyecto yo utilizo lo siguiente para esperar los hilos que creo:</p>
+                                        <blockquote>
+                                                <pre>
+                                                        <code>
+<![CDATA[
+pthread_join(trabajadores[i],(void **)&(tiempoCorrida))
+]]>
+                                                        </code>
+                                                </pre>
+                                        </blockquote>
+                                        <p>donde: <code>trabajadores</code> es un arreglo --&gt; <code><![CDATA[pthread_t trabajadores[numAtrac];]]></code> y <code><![CDATA[tiempoCorrida]]></code> un apuntador a entero --&gt; <code><![CDATA[int *tiempoCorrida;]]></code></p>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <p>Para no caer en comportamiento indefinido, asegúrense de que ese apuntador apunte a un entero en la memoria cuyo tiempo de vida no termine antes de que ocurra el <code>pthread_join</code>; es decir que deberían haber hecho algo como <code><![CDATA[tiempoCorrida = malloc(sizeof(int));]]></code> o <code><![CDATA[tiempoCorrida = calloc(1, sizeof(int));]]></code> dentro del hilo (y no olviden hacer el correspondiente <code>free</code> en el hilo principal cuando ya hayan usado ese valor), o quizás algo como <code><![CDATA[tiempoCorrida = algo;]]></code> donde <code>algo</code> es la dirección de un objeto local de otra función o un objeto global, y que ese objeto siga existiendo cuando ejecutan <code>pthread_join</code>.</p>
+                        </li>
+                        <li id="p6">
+                                <h3><code>pthread_join</code> infinito</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <p>Pero sucede que cuando se ejecuta esa instruccion (<code><![CDATA[pthread_join(trabajadores[i],(void **)&(tiempoCorrida))]]></code>) se guinda el programa y no termina</p>
+                                        <p>¿A qué se debe esto? ¿Que puedo estar haciendo mal?</p>
+                                        <p>Cuando coloco esta instruccion en comentarios <code>//</code>, el main termina.</p>
+                                        <p>En la funcion que mando a ejecutar con <code><![CDATA[pthread_create(&trabajadores[i], NULL, (void *)iterar, (void*)args )]]></code> (<code>iterar</code>) hago un <code><![CDATA[pthread_exit(tiempoCorrida);]]></code>, donde igualmente <code>tiempoCorrida</code> es un apuntador a entero.</p>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <p>En principio, <code>pthread_join</code> solo retorna cuando ese hijo sale, ya sea porque su función principal retornó, o porque en alguna parte de su ejecución llamó a <code>pthread_exit</code>. Si no tienen comportamiento indefinido y <code>pthread_join</code> no retorna, es porque el hilo con el que pretenden sincronizarse sencillamente no está saliendo.</p>
+                                <p>Sospecho que el ciclo en el que hacen <code>sleep</code> debe estar iterando infinitamente, o quizás le están pasando un argumento a <code>sleep</code> que es más grande de lo que ustedes creen y debería ser; ¿están manejando los tiempos indicados en la entrada en segundos como indicó Yudith hace unas semanas por e‐mail? ¿Están pasando en la entrada tiempos como 1000 y 10000, como los que estaban en los ejemplos del enunciado, e interpretándolos como segundos? En ese último caso, deberían cambiar esas entrada a 1 y 10.</p>
+                                <p>Podrían usar <code>gdb</code> para poner un <em>breakpoint</em> en el punto de su programa donde deberían llamar a <code>pthread_exit</code>, o simplemente imprimir algo ahí para verificar si se llama o no. Lo más probable es que nunca se esté ejecutando.</p>
                         </li>
                 </ol>
                 <hr/>

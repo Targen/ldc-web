@@ -25,6 +25,7 @@
                         <li><a href="p2"     >2012‒02‒07 (semana 5): Consultas del primer proyecto              </a></li>
                         <li><a href="pthread">2012‒02‒13 (semana 6): Ejemplos de sincronización para hilos POSIX</a></li>
                         <li><a href="p2-2"   >2012‒02‒21 (semana 7): Otra consulta del primer proyecto          </a></li>
+                        <li><a href="p2-3"   >2012‒02‒24 (semana 7): Más consultas del primer proyecto          </a></li>
                 </ol>
                 <hr/>
                 <p>
