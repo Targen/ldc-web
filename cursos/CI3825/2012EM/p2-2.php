@@ -46,12 +46,14 @@
                         <li class="main">
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
 void *atracciones_Parque(void *arg) {
         double timehijo;
         int n, lee, pasa, montados; 
         int i = (int)(intptr_t)arg;
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>Acá están usando un truco típicamente conocido como <em>doble coerción</em> para evitar una advertencia del compilador.  Ese es un truco que funciona perfectamente con el compilador GCC, y como es el que están usando, esto no está necesariamente mal.  Yo suelo recomendar fuertemente que usen extensiones del proyecto GNU a los lenguajes y otros estándares con los que estén trabajando, pero siempre bajo dos condiciones importantes:</p>
@@ -90,12 +92,14 @@ void *atracciones_Parque(void *arg) {
                         <li class="main">
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
         struct timeval ti, th;
         n = 0;
         lee = 0;
         gettimeofday(&ti, NULL);   // Instante inicial
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>La página del manual del programador de Linux referente a <code>gettimeofday</code>, incluida en la versión 3.37 del proyecto de páginas de manual de Linux, dice</p>
@@ -106,6 +110,7 @@ void *atracciones_Parque(void *arg) {
                                 <p><code>clock_gettime</code> tiene un funcionamiento muy similar a <code>gettimeofday</code>, pero es la llamada recomendada por POSIX.  El uso que les interesa es algo como esto:</p>
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
 #include <stdio.h>    // para “perror”
 #include <stdlib.h>   // para “exit”
@@ -123,17 +128,20 @@ if (clock_gettime(CLOCK_REALTIME, &ti) != 0) {
     exit(EX_SOFTWARE);
 }
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>La estructura <code>timespec</code> es muy similar a la estructura <code>timeval</code> usada por <code>gettimeofday</code>:</p>
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
 struct timespec {
     time_t   tv_sec;        /* seconds */
     long     tv_nsec;       /* nanoseconds */
 };
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>La única diferencia es que el segundo campo es de tipo <code>long</code> en vez de <code>suseconds_t</code>, se llama <code>tv_nsec</code> en vez de <code>tv_usec</code>, y representa nanosegundos en vez de microsegundos.</p>
@@ -141,9 +149,11 @@ struct timespec {
                         <li class="main">
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
         while (iteraciones - n > 0) {
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>Sobre lo que deben hacer los hilos trabajadores, el enunciado dice explícitamente así:</p>
@@ -162,6 +172,7 @@ struct timespec {
                         <li class="main">
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
                 if (n == 0) {      
                         montados = d[i].numCola - d[i].capacidad;
@@ -181,6 +192,7 @@ struct timespec {
                         }
                 }
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>Primero, un comentario de estilo: todo ese código se puede resumir así:</p>
@@ -199,12 +211,14 @@ struct timespec {
                                 <p>En este caso particular, probablemente hubiera sido mejor asignar a <code>montados</code> el mínimo entre la capacidad de la atracción y la cantidad de visitantes en la cola, y luego restar ese número a la cola:</p>
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
                 #define MIN(a, b) ((a) <= (b) ? (a) : (b))
 
                 montados = MIN(d[i].capacidad, d[i].numCola);
                 d[i].numCola -= montados;
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>En efecto esto implementaría lo especificado en el segundo punto de la lista del enunciado.</p>
@@ -212,9 +226,11 @@ struct timespec {
                         <li class="main">
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
                                 sleep(d[i].tiempo);             
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>Esto en efecto implementa el tercer punto de la lista del enunciado que copié antes.</p>
@@ -222,6 +238,7 @@ struct timespec {
                         <li class="main">
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
                                 /* La cola tenia menos personas que capacidad*/
                                 if (d[i].numCola < 0) {      
@@ -229,6 +246,7 @@ struct timespec {
                                         d[i].numCola = 0;
                                 }
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>Acá están compensando la deficiencia semántica del valor que decidieron almacenar antes: en realidad la cola nunca llega a tener una cantidad negativa de visitantes en espera (¿qué significaría “hay −3 personas en la cola”?), pero como le asignaron un número extraño a una variable que debería haber representado “la cantidad de visitantes en espera en la cola de la atracción <code>i</code>”, ahora tienen que aplicar una corrección también extraña.</p>
@@ -237,10 +255,12 @@ struct timespec {
                         <li class="main">
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
                                 /* Seccion critica */
                                 pthread_mutex_lock( &mutex1 );
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>Acá veo que están usando un mismo <code>mutex</code> para todas las variables compartidas entre todos los hilos.  Deberían usar un <code>mutex</code> diferente para la comunicación entre cada par de hilos adyacentes.  Si usan un solo <code>mutex</code>, están restringiendo la ejecución concurrente de su programa mucho más de lo necesario, y eso desaprovecha la capacidad de concurrencia disponible en el sistema y le quita el sentido a escribir un programa concurrente; en efecto, usar un solo <code>mutex</code> hace que su programa resulte muy similar a un programa <em>serial</em>.</p>
@@ -248,6 +268,7 @@ struct timespec {
                         <li class="main">
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
                                 if (i == 0) {
                                         d[atracciones-1].sig = d[atracciones-1].sig - lee;              
@@ -260,15 +281,18 @@ struct timespec {
                                         d[i].sig = d[i].sig + d[i].capacidad;   
                                 }
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>Acá también hay reducciones considerables que se pueden aplicar:</p>
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
                                 d[(i == 0 ? atracciones ? i)-1].sig -= lee;
                                 d[i].sig += (montados < 0 ? pasa : d[i].capacidad);
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>La primera de esas líneas hace lo que les sugiero que hagan no acá sino antes de hacer <code>sleep</code>; si la hacen antes, evidentemente deben hacerla en una sección crítica; es decir, habiendo reservado el <code>mutex</code> correspondiente a esa variable compartida.</p>
@@ -278,6 +302,7 @@ struct timespec {
                         <li class="main">
                                 <blockquote>
                                         <pre>
+                                                <code>
 <![CDATA[
                                 pthread_mutex_unlock( &mutex1 );
                                 n = n+1;                
@@ -289,6 +314,7 @@ struct timespec {
                         pthread_exit((void*)pthread_self());
                 }
 ]]>
+                                                </code>
                                         </pre>
                                 </blockquote>
                                 <p>Al pasar el resultado de <code>pthread_self()</code> a la llamada a <code>pthread_exit</code>, están retornando el identificador del hilo a quien haya llamado a <code>pthread_join</code> con el identificador de ese hilo… pero si llamaron a <code>pthread_join</code> con ese identificador, ya tenían ese identificador, así que ¿qué sentido tiene pasarlo como valor de retorno?</p>
