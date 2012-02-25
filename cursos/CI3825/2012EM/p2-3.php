@@ -17,12 +17,17 @@
                 <h2>2012‒02‒24 (semana 7): Más consultas del primer proyecto</h2>
                 <p>Acá les dejo las preguntas y respuestas de varias consultas que me han hecho estudiantes del curso sobre el primer proyecto.  Espero que les sirvan.</p>
                 <ol>
-                        <li><a href="#p1">Reciclaje de <em>pipe</em>s                                                  </a></li>
-                        <li><a href="#p2">Espera por la terminación de los trabajadores e impresión de sus resultados  </a></li>
-                        <li><a href="#p3">Cierre de <em>file descriptors</em> de <em>pipe</em>s                        </a></li>
-                        <li><a href="#p4">Unidades de tiempo y <code>gettimeofday</code> vs. <code>clock_gettime</code></a></li>
-                        <li><a href="#p5">Pasaje de valores de retorno desde un hilo                                   </a></li>
-                        <li><a href="#p6"><code>pthread_join</code> infinito</a></li>
+                        <li><a href="#p1" >Reciclaje de <em>pipe</em>s                                                  </a></li>
+                        <li><a href="#p2" >Espera por la terminación de los trabajadores e impresión de sus resultados  </a></li>
+                        <li><a href="#p3" >Cierre de <em>file descriptors</em> de <em>pipe</em>s                        </a></li>
+                        <li><a href="#p4" >Unidades de tiempo y <code>gettimeofday</code> vs. <code>clock_gettime</code></a></li>
+                        <li><a href="#p5" >Pasaje de valores de retorno desde un hilo                                   </a></li>
+                        <li><a href="#p6" ><code>pthread_join</code> infinito                                           </a></li>
+                        <li><a href="#p7" >“vector” de enteros                                                          </a></li>
+                        <li><a href="#p8" >Problemas de referencias                                                     </a></li>
+                        <li><a href="#p9" >Formas alternativas de desreferencia no‐trivial                              </a></li>
+                        <li><a href="#p10">Pasaje de parámetros por referencia reutilizada                              </a></li>
+                        <li><a href="#p11">Sobreescritura sin sincronización                                            </a></li>
                 </ol>
                 <ol>
                         <li id="p1">
@@ -115,6 +120,93 @@ pthread_join(trabajadores[i],(void **)&(tiempoCorrida))
                                 <p>Sospecho que el ciclo en el que hacen <code>sleep</code> debe estar iterando infinitamente, o quizás le están pasando un argumento a <code>sleep</code> que es más grande de lo que ustedes creen y debería ser; ¿están manejando los tiempos indicados en la entrada en segundos como indicó Yudith hace unas semanas por e‐mail? ¿Están pasando en la entrada tiempos como 1000 y 10000, como los que estaban en los ejemplos del enunciado, e interpretándolos como segundos? En ese último caso, deberían cambiar esas entrada a 1 y 10.</p>
                                 <p>Podrían usar <code>gdb</code> para poner un <em>breakpoint</em> en el punto de su programa donde deberían llamar a <code>pthread_exit</code>, o simplemente imprimir algo ahí para verificar si se llama o no. Lo más probable es que nunca se esté ejecutando.</p>
                         </li>
+                        <li id="p7">
+                                <h3>“vector” de enteros</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <p>Ahora tengo otro problema: Yo deseo pasar por parametros a la funcion que llama a ejecutar el <code>pthread_create</code> 3 datos, para ello declaro un vector de enteros de tamaño 3 --&gt; <code>int args[3];</code></p>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <p>Bien, pero hay dos detalles: uno tonto y uno importante.</p>
+                                <p>El tonto es que eso no es un vector sino un arreglo. Cuando trabajen con C++ (en alguna otra materia, claro) seguramente trabajarán con una plantilla de clases definida en la biblioteca estándar de C++ (ISO/IEC 14882:2011 §23.3.6 [vector]) llamada <code>vector</code> que esencialmente produce arreglos que ajustan su capacidad automáticamente cuando les es necesario. Por otra parte, desde el punto de vista matemático, un vector es un elemento de un álgebra con ciertas propiedades; los arreglos de C no tienen esas propiedades. Eso es un arreglo, no un vector.</p>
+                                <p>El detalle importante es que eso es exactamente <em>un</em> arreglo. Cuando escriben esa declaración, el compilador de C sabrá que debe reservar en la memoria espacio para exactamente tres enteros. Si pretenden que haya tres enteros <em>por hilo</em> en vez de tres enteros <em>en total</em>, tendrán que hacer algo ligeramente diferente.</p>
+                        </li>
+                        <li id="p8">
+                                <h3>Problemas de referencias</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <p>y al crear el hilo utilizo: <code><![CDATA[pthread_create(&trabajadores[i], NULL, iterar, (void *)args )]]></code>.</p>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <p>Eso en principio no está mal siempre que <code>args</code> sea un apuntador a un objeto de cualquier tipo cuyo tiempo de vida sea al menos hasta que todos los hilos que tengan un apuntador a él hayan terminado de usarlo, y que si varios hilos lo usan, se asegure la exclusión mutua cuando hace falta.</p>
+                                <p>Si los apuntadores que pasan a los hilos apuntan a objetos reservados en el <em>heap</em> (o a un lugar en la pila que sepan que no será desempilado hasta que esos hilos hayan terminado), y si los apuntadores pasados a cada hilo son a objetos <em>distintos</em>, y si esos objetos solo son usados por un hilo a la vez, no tendrán problemas.</p>
+                                <p>En cambio, si los apuntadores son todos a un mismo objeto, tendrán problemas.</p>
+                        </li>
+                        <li id="p9">
+                                <h3>Formas alternativas de desreferencia no‐trivial</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <p>Luego cuando voy a recuperar los datos en <code>iterar</code> (la funcion que ejecuta el hilo) los recupero de la siguiente manera:</p>
+                                        <blockquote>
+<pre><code><![CDATA[
+int atraccion = *((int *)(datos));
+int capacidad = *((int *)(datos) + 1);
+int tiempoUso = *((int *)(datos) + 2);
+]]></code></pre>
+                                        </blockquote>
+                                        <p>donde la firma de la funcion es la siguiente: <code>void *iterar(void *datos)</code></p>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <p>Perfecto.</p>
+                                <p>También sirve así, que es exactamente equivalente pero resulta bastante más obvio:</p>
+                                <blockquote>
+<pre><code><![CDATA[
+#define DATOS ((int *)datos)
+int atraccion = DATOS[0];
+int capacidad = DATOS[1];
+int tiempoUso = DATOS[2];
+]]></code></pre>
+                                </blockquote>
+                                <p>O igual de obvio pero con menos memoria, así:</p>
+                                <blockquote>
+<pre><code><![CDATA[
+#define DATOS ((int *)datos)
+#define atraccion (DATOS[0])
+#define capacidad (DATOS[1])
+#define tiempoUso (DATOS[2])
+]]></code></pre>
+                                </blockquote>
+                                <p>Aunque ya esto es ligeramente distinto, porque ya no son variables locales con copias de los valores en el arreglo a cuyo inicio apunta lo que fue pasado como parámetro, sino que se usa directamente el arreglo apuntado. Si todo está bien, no habría diferencia: igual el arreglo apuntado por el parámetro de cada hilo debería ser totalmente independiente del usado con los demás hilos. Y si no es así, tendrán problemas.</p>
+                                <p>También está el problema de que esos símbolos tomarían ese significado en todo el archivo (más precisamente, en toda la unidad de traducción, que incluye a todos los archivos incluidos), así que si usan esos nombres en cualquier otra parte del código, pasarían cosas malas. Todo depende de cuánto les agrade usar macros.</p>
+                                <p>En cualquier caso, la forma que usaron está bien.</p>
+                        </li>
+                        <li id="p10">
+                                <h3>Pasaje de parámetros por referencia reutilizada</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <p>pero resulta que la funcion siempre recibe los ultimos datos enviados en el <code>pthread_create</code>, NO toma en cuenta los primeros, parece que los perdiera.</p>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <p>Porque seguramente no están creando un objeto independiente para pasar los datos a cada hilo, sino que en cada iteración del ciclo de creación de hilos están <em>sobreescribiendo</em> los datos pasados al anterior. Recuerden que la función recibe un <em>apuntador</em>; es decir, el pasaje de parámetros es por <em>referencia</em>, no por valor. Los valores en su arreglo <strong>no</strong> se copian al momento de llamar a <code>pthread_create</code>.</p>
+                        </li>
+                        <li id="p11">
+                                <h3>Sobreescritura sin sincronización</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <p>He verificado que los datos son enviados distintos (con un <code>printf</code>) antes del <code>pthread_create</code>. ¿Qué puede estar sucediendo?</p>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <p>Que no hay sincronización entre el momento en el que los datos del hilo son sobreescritos y el momento en el que el hijo copia esos datos a sus variables locales. La mejor manera de resolver el problema es tener objetos separados para el pasaje de parámetros a cada hilo; otra manera bastante más complicada y que no ahorra casi nada es usar primitivas de sincronización para sincronizar esos dos eventos, pero realmente no vale la pena hacerlo así por ahorrarse tres enteros por hilo.</p></li>
+                        </li>
+<!--
+                        <li id="p12">
+                                <h3></h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                        </li>
+-->
                 </ol>
                 <hr/>
                 <p>
