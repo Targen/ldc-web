@@ -196,7 +196,7 @@ int tiempoUso = DATOS[2];
                                         <p>He verificado que los datos son enviados distintos (con un <code>printf</code>) antes del <code>pthread_create</code>. ¿Qué puede estar sucediendo?</p>
                                 </blockquote>
                                 <h4>Respuesta</h4>
-                                <p>Que no hay sincronización entre el momento en el que los datos del hilo son sobreescritos y el momento en el que el hijo copia esos datos a sus variables locales. La mejor manera de resolver el problema es tener objetos separados para el pasaje de parámetros a cada hilo; otra manera bastante más complicada y que no ahorra casi nada es usar primitivas de sincronización para sincronizar esos dos eventos, pero realmente no vale la pena hacerlo así por ahorrarse tres enteros por hilo.</p></li>
+                                <p>Que no hay sincronización entre el momento en el que los datos del hilo son sobreescritos y el momento en el que el hijo copia esos datos a sus variables locales. La mejor manera de resolver el problema es tener objetos separados para el pasaje de parámetros a cada hilo; otra manera bastante más complicada y que no ahorra casi nada es usar primitivas de sincronización para sincronizar esos dos eventos, pero realmente no vale la pena hacerlo así por ahorrarse tres enteros por hilo.</p>
                         </li>
 <!--
                         <li id="p12">
