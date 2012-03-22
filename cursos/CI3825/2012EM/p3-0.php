@@ -17,9 +17,13 @@
                 <h2>2012‒03‒18 (semana 7): Consultas del segundo proyecto</h2>
                 <p>Acá les dejo las preguntas y respuestas de varias consultas que me han hecho estudiantes del curso sobre el segundo proyecto.  Espero que les sirvan.</p>
                 <ol>
-                        <li><a href="#p1">Orden de las reglas en los <code>Makefile</code>s                   </a></li>
-                        <li><a href="#p2">Movimiento del cursor de un archivo abierto                         </a></li>
-                        <li><a href="#p2">Estrategias para generación de los Makefiles con un orden específico</a></li>
+                        <li><a href="#p1">Orden de las reglas en los <code>Makefile</code>s                                     </a></li>
+                        <li><a href="#p2">Movimiento del cursor de un archivo abierto                                           </a></li>
+                        <li><a href="#p2">Estrategias para generación de los <code>Makefiles</code> con un orden específico     </a></li>
+                        <li><a href="#p4">Requerimientos sobre archivos <code>.d</code> generados                               </a></li>
+                        <li><a href="#p5">Significado y ubicación de reglas para el <em>target</em> especial <code>.PHONY</code></a></li>
+                        <li><a href="#p6">Orden de las reglas en un <code>Makefile</code>                                       </a></li>
+                        <li><a href="#p7">Técnicas de copia de archivos y <code>mmap</code>                                     </a></li>
                 </ol>
                 <ol>
                         <li id="p1">
@@ -81,6 +85,92 @@ all: reportlog
 ]]></code></pre>
                                         </blockquote></li>
                                         <li><p>Omití las recetas porque las reglas implícitas de GNU Make hacen lo que deben hacer en este caso.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p4">
+                                <h3>Requerimientos sobre archivos <code>.d</code> generados</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Te escribo para comentarte una duda que tengo.. Al usar la opcion de gcc -MMD, sabes que se crea un archivo .d, no hay problema con que esos archivos queden dentro del proyecto de software, en el ejemplo dentro de las carpertas de multidoc??</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>El documento del enunciado del proyecto especifica esto en §2.2.b:</p></li>
+                                        <li>
+                                                <blockquote>
+                                                        <p>rautomake podrá suponer que no existe ningún archivo dentro del directorio donde es ejecutado, ni dentro de ninguno de sus subdirectorios, cuyo nombre termine en “.d”. Rautomake no será ejecutado en un directorio que tenga algún subdirectorio directo o indirecto cuyo nombre termine en “.d”.</p>
+                                                </blockquote>
+                                        </li>
+                                        <li><p>El propósito de ese texto es asegurarles que cualquier archivo con un nombre así puede ser descartado; es decir, que no es parte del proyecto que debe poder compilarse con sus Makefiles generados, y no es necesario para su funcionamiento, porque en principio no existían; si ya existen, están en libertad de sobreescribirlos, borrarlos o lo que sea. Así se les permite usar los archivos .d para obtener las dependencias. Hay otros métodos, pero ese es uno que es perfectamente válido usar (de hecho es el que a mí se me había ocurrido, pero varios han descubierto soluciones alternativas también válidas, y en algunos casos un poco mejores y más simples).</p></li>
+                                        <li><p>El enunciado no establece requerimientos sobre los archivos que su proyecto genere aparte de que se deben crear Makefiles en ciertas condiciones, y que el proyecto sobre el que corre debe poder compilarse.</p></li>
+                                        <li><p>Hubiera sido bueno especificar que no puede modificar ningún archivo que el proyecto tuviera originalmente (con la excepción especial de los .d, porque con esos pueden hacer lo que quieran), pero se me pasó. Pero claro, si borran el proyecto entonces no podrían al final compilarlo con sus Makefiles.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p5">
+                                <h3>Significado y ubicación de reglas para el <em>target</em> especial <code>.PHONY</code></h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Es necesario que el PHONY este al principio del makefile para que este funcione??</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>El <em>target</em> especial <code>.PHONY</code> de GNU Make hace que la evaluación de las recetas de sus prerequisitos se efectúe siempre que ocurra en una regla que se procesa sin que se intente ver si hay un archivo que se llama como ese <em>target</em> para verificar si está al día.</p></li>
+                                        <li>
+                                                <p>La idea es más o menos esta: en un <code>Makefile</code> se suele incluir, por ejemplo, un <em>target</em> llamado <code>clean</code> cuya receta elimina todos los archivos del proyecto que no sean parte de su código fuente. El detalle está en que no se pretende considerar que pueda haber un archivo cuyo <strong>nombre</strong> sea <code>clean</code>, en contraste con las reglas usuales para compilar. Por ejemplo, en la regla</p>
+                                                <blockquote>
+<pre><code><![CDATA[
+parser.o: parser.c
+	$(CC) $(CFLAGS) -c $<
+]]></code></pre>
+                                                </blockquote>
+                                                <p>se le indica a Make que si el archivo llamado <code>parser.o</code> es más viejo que el archivo <code>parser.c</code>, o si <code>parser.o</code> no existe, entonces se debe (re)generar ejecutando la receta. El cambio, en el caso de la regla</p>
+                                                <blockquote>
+<pre><code><![CDATA[
+clean:
+	rm -f ./*.o multidoc
+]]></code></pre>
+                                                </blockquote>
+                                                <p>no se desea indicarle a Make que verifique si hay un archivo llamado <code>clean</code> que quizás deba actualizarse ejecutando la receta, sino que se desea ejecutar el comando incondicionalmente. Para eso es que se usa el <em>target</em> especial <code>.PHONY</code>.</p>
+                                        </li>
+                                        <li><p>Como se desea hacer la entrada a los subdirectorios incondicionalmente (porque solo ellos sabrán si algo debe regenerarse, porque solo ellos conocen las dependencias de los archivos que están en ellos), es necesario que las ejecuciones recursivas se ejecuten incondicionalmente (aunque en el enunciado final eliminaron lo que había escrito que requería eso, pero seguramente será evaluado; ya saben cómo es esto…).</p></li>
+                                        <li><p>Aunque <code>.PHONY</code> es un <em>target</em> especial que tiene una semántica distinta de la de los <em>target</em>s usuales, sus reglas, al igual que todas las demás reglas, pueden ocurrir en el Makefile en cualquier orden.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p6">
+                                <h3>Orden de las reglas en un <code>Makefile</code></h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>-El orden del resto de las reglas que se colocan en el makefile es irrelevante mientras esten correctas?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>En efecto. Make lee el <code>Makefile</code> completo y <strong>luego</strong> hace el análisis sobre el grafo de dependencias resultante, así que el orden no importa si el Makefile es correcto en algún orden.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p7">
+                                <h3>Técnicas de copia de archivos y <code>mmap</code></h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Tengo otra duda: Para copiar lo que esta en un archivo a otro.. Tendria que leer de uno y escribir en el otro.</p></li>
+                                                <li><p>Pero como podria hacer para saber el tamano de lo que voy a leer(en realidad quiero leer toda la linea)?... Podria leer caracter por caracter pero alguna vez nos dijeron que eso no era bueno..entonces no se..</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>En efecto leer caracter por caracter es una opción indeseable: es decirle al sistema de operación que bloquee el proceso hasta que sea leído ese caracter, y luego se requiere pasar a estado <em>running</em> únicamente para pedirle al sistema operativo que escriba ese caracter en el otro archivo, todo eso por cada uno de los caracteres del archivo. Esto es lentísimo por la cantidad de veces que el proceso se bloquea.</p></li>
+                                        <li><p>La técnica sencilla y básica para mejorar esto es leer por lotes: su programa puede tener un espacio de memoria (un <em>buffer</em>) de un cierto tamaño (probablemente fijo) que se use para almacenar temporalmente una parte del archivo que se leyó, y así poder escribir el contenido de ese <em>buffer</em> cuando se termina de leer un lote de los datos a copiar, y luego volver a empezar. En el caso de un <em>buffer</em> de exactamente un caracter, esta técnica, claro, se reduce a la anterior y es lenta.</p></li>
+                                        <li><p>Otra técnica es determinar el tamaño del archivo a copiar usando funciones del sistema de archivo que provean esa información (como <code>stat</code>) y crear un <em>buffer</em> en la memoria del programa suficientemente grande para almacenar su contenido completo. Este es, claro, el extremo opuesto de la primera técnica. Normalmente es la técnica más rápida (<em>modulo</em> el impacto de la paginación de la memoria y demás), pero consume cantidades de memoria que podrían ser excesivas, y se arriesga a que el proceso falle por tratar de manipular un archivo muy grande y que se agote la memoria del sistema.</p></li>
+                                        <li><p>Existen técnicas más modernas que resuelven el problema transfiriéndolo al sistema de operación, que seguramente sabrá aproximarse mejor al óptimo: es posible hacer un <em>mapeo</em> del contenido de un archivo al espacio de memoria de un proceso; cuando el proceso desea leer de o escribir a una posición de memoria que representa una posición en un archivo, el sistema de operación se encarga de traducir eso en la acción correspondiente sobre el archivo <em>mapeado</em>. Otra ventaja de esta técnica es que el código usado para acceder a una posición de un archivo se convierte en un simple acceso a un arreglo en la memoria como cualquier otro, así que la programación se facilita cuando las operaciones hechas sobre el archivo son de cierta complejidad. La desventaja es que hay que aprender a usar estos <em>mapeos</em> de memoria y su semántica puede ser un poco difícil de asimilar en un principio (pero, claro, eso se aprende una sola vez y de ahí en adelante simplifica la vida permanentemente).</p></li>
+                                        <li><p>Como el enunciado no establece requerimientos de eficiencia (y realmente son pequeños los datos que hay que copiar) pueden hacerlo como quieran.</p></li>
+                                        <li><p>La técnica de <em>mapeos</em> de memoria es algo que vale la pena aprender, así que se las recomiendo si tienen algo de tiempo para dedicarle; si terminan dedicándose a hacer software sujeto a restricciones de eficiencia o que sea de escala masiva (básicamente cualquier cosa que valga la pena hacer fuera del mundo académico), les será necesario saber trabajar con eso. Si tienen poco tiempo, recuerden que la técnica de copiar un byte a la vez es válida y simple, pero no les enseñará absolutamente nada. La técnica del <em>buffer</em> es casi tan simple como la de copiar un byte a la vez, y claro, es casi tan aburrida.</p></li>
+                                        <li><p>Si deciden usar <em>mapeos</em> de memoria, lean sobre la función <code>mmap</code>. No es nada difícil de usar. El único detalle es que no es buena idea (y por lo general) usarlas para operaciones que puedan modificar el tamaño del archivo <em>mapeado</em>, así que sería más para la lectura que para la escritura. Por cierto, <code>fprintf(out_file, "%*s", n, map_ptr)</code> lee <code>n</code> caracteres desde la posición de memoria apuntada por <code>map_ptr</code> y los escribe a <code>out_file</code>; si usan eso, la copia sale en muy poco código y será extremadamente eficiente.</p></li>
                                 </ol>
                         </li>
                 </ol>
