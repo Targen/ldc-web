@@ -17,13 +17,17 @@
                 <h2>2012‒03‒18 (semana 7): Consultas del segundo proyecto</h2>
                 <p>Acá les dejo las preguntas y respuestas de varias consultas que me han hecho estudiantes del curso sobre el segundo proyecto.  Espero que les sirvan.</p>
                 <ol>
-                        <li><a href="#p1">Orden de las reglas en los <code>Makefile</code>s                                     </a></li>
-                        <li><a href="#p2">Movimiento del cursor de un archivo abierto                                           </a></li>
-                        <li><a href="#p2">Estrategias para generación de los <code>Makefiles</code> con un orden específico     </a></li>
-                        <li><a href="#p4">Requerimientos sobre archivos <code>.d</code> generados                               </a></li>
-                        <li><a href="#p5">Significado y ubicación de reglas para el <em>target</em> especial <code>.PHONY</code></a></li>
-                        <li><a href="#p6">Orden de las reglas en un <code>Makefile</code>                                       </a></li>
-                        <li><a href="#p7">Técnicas de copia de archivos y <code>mmap</code>                                     </a></li>
+                        <li><a href="#p1" >Orden de las reglas en los <code>Makefile</code>s                                      </a></li>
+                        <li><a href="#p2" >Movimiento del cursor de un archivo abierto                                            </a></li>
+                        <li><a href="#p2" >Estrategias para generación de los <code>Makefiles</code> con un orden específico      </a></li>
+                        <li><a href="#p4" >Requerimientos sobre archivos <code>.d</code> generados                                </a></li>
+                        <li><a href="#p5" >Significado y ubicación de reglas para el <em>target</em> especial <code>.PHONY</code> </a></li>
+                        <li><a href="#p6" >Orden de las reglas en un <code>Makefile</code>                                        </a></li>
+                        <li><a href="#p7" >Técnicas de copia de archivos y <code>mmap</code>                                      </a></li>
+                        <li><a href="#p8" >Nombres de <code>target</code>s y técnicas alternativas para los <code>Makefile</code>s</a></li>
+                        <li><a href="#p9" >Corrupción de memoria por <em>buffer overflow</em>s                                    </a></li>
+                        <li><a href="#p10">Verificación de permisos                                                               </a></li>
+                        <li><a href="#p11">Posibilidad de prórroga                                                                </a></li>
                 </ol>
                 <ol>
                         <li id="p1">
@@ -171,6 +175,87 @@ clean:
                                         <li><p>Como el enunciado no establece requerimientos de eficiencia (y realmente son pequeños los datos que hay que copiar) pueden hacerlo como quieran.</p></li>
                                         <li><p>La técnica de <em>mapeos</em> de memoria es algo que vale la pena aprender, así que se las recomiendo si tienen algo de tiempo para dedicarle; si terminan dedicándose a hacer software sujeto a restricciones de eficiencia o que sea de escala masiva (básicamente cualquier cosa que valga la pena hacer fuera del mundo académico), les será necesario saber trabajar con eso. Si tienen poco tiempo, recuerden que la técnica de copiar un byte a la vez es válida y simple, pero no les enseñará absolutamente nada. La técnica del <em>buffer</em> es casi tan simple como la de copiar un byte a la vez, y claro, es casi tan aburrida.</p></li>
                                         <li><p>Si deciden usar <em>mapeos</em> de memoria, lean sobre la función <code>mmap</code>. No es nada difícil de usar. El único detalle es que no es buena idea (y por lo general) usarlas para operaciones que puedan modificar el tamaño del archivo <em>mapeado</em>, así que sería más para la lectura que para la escritura. Por cierto, <code>fprintf(out_file, "%*s", n, map_ptr)</code> lee <code>n</code> caracteres desde la posición de memoria apuntada por <code>map_ptr</code> y los escribe a <code>out_file</code>; si usan eso, la copia sale en muy poco código y será extremadamente eficiente.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p8">
+                                <h3>Nombres de <code>target</code>s y técnicas alternativas para los <code>Makefile</code>s</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li>
+                                                        <p>Si yo coloco</p>
+                                                        <blockquote>
+<pre><code><![CDATA[
+.PHONY: all force
+]]></code></pre>
+                                                        </blockquote>
+                                                        <p>al principio de todos los makefiles esta mal? Osea que siempre coloco el force sin distincion... ES correcto de sta manera ?</p>
+                                                </li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>No hay ningún problema siempre que eso no entre en conflicto con alguna otra regla que se utilice. Sería posible, claro, que el directorio principal del proyecto o alguno de sus subdirectorios se llamaran precisamente como alguno de esos dos <em>targets</em> y eso podría producir algún comportamiento indeseado. No se me ocurre un caso que produzca un comportamiento incompatible con el enunciado, pero podría suceder.</p></li>
+                                        <li>
+                                                <p>Esos dos nombres de <em>targets</em> son, por supuesto, totalmente arbitrarios. Podrían generar nombres distintos si determinan que en algún caso particular eso pueda producir algún problema. Lo que hace que esas reglas hagan lo que hacen es la forma en que se usan:</p>
+                                                <ol>
+                                                        <li><p><code>all</code> es el nombre que típicamente se le da a la primera regla normal que ocurre en un Makefile, que es la que se requiere implícitamente cuando <code>make</code> se ejecuta sin parámetros que indiquen <em>targets</em> (que es como se hacen las invocaciones recursivas en los ejemplos del documento del enunciado). Hasta podrían hacer que las invocaciones recursivas usen una regla explícitamente y no importaría el orden en absoluto, ni siquiera para la primera regla.</p></li>
+                                                        <li><p><code>force</code> es como <span title="O como se le ocurrió al que escribió el artículo del que saqué la idea; ya ni recuerdo.">se me ocurrió</span> nombrar a una regla que fuerza la evaluación de las llamadas recursivas a <code>make</code> para subdirectorios. El enunciado ni siquiera requiere que usen esa técnica exacta para hacer las llamadas recursivas.</p></li>
+                                                </ol>
+                                        </li>
+                                        <li><p>Es válido que intenten reproducir el formato exacto de los ejemplos del documento del enunciado, pero no es de ninguna manera necesario: los requerimientos son los que se especifican en el texto del enunciado, y los ejemplos son solo informativos.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p9">
+                                <h3>Corrupción de memoria por <em>buffer overflow</em>s</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Estoy tratando de ir leyendo por lotes, pero en algun momento sale un error que dice:</p></li>
+                                                <li><blockquote>
+<pre><code><![CDATA[
+** glibc detected ** ./rautomake: malloc(): memory corruption
+]]></code></pre>
+                                                </blockquote></li>
+                                                <li><p>Y no logro saber que es lo que pasa. Por que motivos puede salir ese error?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>El funcionamiento del mecanismo de memoria dinámica con <code>malloc</code> y <code>free</code> requiere mantener ciertos datos sobre los lotes de memoria que se han reservado, y esos datos suelen ubicarse cerca de los propios lotes de memoria dinámica que se reservaron en el <em>heap</em>.</p></li>
+                                        <li><p>Cuando se escribe a un espacio de memoria que está fuera de las fronteras del lote que se reservó suceden cosas malas: si el espacio de memoria accedido estaba fuera de los rangos válidos para el proceso, el sistema operativo envía al proceso la señal SIGFAULT que produce el típico <em>segmentation fault</em>; sin embargo, es posible que el acceso indebido se mantenga dentro de la memoria del proceso (así que no habrá <em>segfault</em>) pero se podría sobreescribir alguno de los datos propios de la implementación de <code>malloc</code>, <code>free</code> u otras partes del entorno de ejecución del lenguaje C. Eso es lo que produce ese error: es un <em>buffer overflow</em>.</p></li>
+                                        <li><p>Hay dos fuentes probables para estos errores: o tienen un error <em>off‐by‐one</em> (cuando se pasan del límite por una posición, porque a alguna condición había que ponerle <code>- 1</code> o <code>+ 1</code>, o comparar con <code>&lt;=</code> en vez de <code>&lt;</code>, o algo así), están escribiendo a un <em>buffer</em> de tamaño fijo usando un mecanismo para la lectura del archivo a copiar que no especifica la cantidad de datos máxima a leer, así que se están escribiendo datos del archivo más allá del límite del buffer.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p10">
+                                <h3>Verificación de permisos</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Con respecto a la verificacion de permisos en los archivos regulares y directorios... se verifica q los permisos los tengan los tres tipos de usuarios? es decir OWNER, GROUP, OTHERS o alguno de estos en especifico?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>La idea es verificar si el proceso tiene permiso de lectura sobre los <code>.c</code> y de lectura, escritura y búsqueda sobre los directorios a visitar. Los detalles del funcionamiento de los permisos de procesos sobre la jerarquía de sistemas de archivos en Linux están bien descritos en las páginas <code>credentials</code> y <code>path_resolution</code> del manual del programador de Linux. Les recomiendo que las lean: les darán una visión general y precisa de los mecanismos involucrados en el proceso sobre el que preguntan.</p></li>
+                                        <li><p>Específicamente, la idea sería verificar si el usuario efectivo del proceso tiene los permisos requeridos; si no, verificar si el grupo efectivo o alguno de los grupos retornados por <code>getgroups</code> tiene los permisos requeridos; si no, verificar si el archivo o directorio otorga los permisos requeridos universalmente.</p></li>
+                                        <li><p>Esta verificación es precisamente la que implementan las llamadas al sistema de apertura de archivos; si la verificación fracasa, típicamente producen un código de error como valor retornado o en la variable global <code>errno</code>; el código más común es <code>EACCES</code>.</p></li>
+                                        <li><p>El enunciado no especifica si el chequeo debe hacerse explícitamente o si puede hacerse con la verificación de errores implícita en las llamadas al sistema.</p></li>
+                                        <li><p>Hacer explícita la verificación es un buen ejercicio que les enseñaría a trabajar con permisos y les permitiría producir mensajes de error detallados (y eso mejora la calidad de la implementación), pero recuerden que la verificación que las llamadas al sistema implementan ya está hecha, es fácil de usar (porque se reduce a verificar valores de retorno y de <code>errno</code>) y es presumible que está libre de errores. En cualquier caso, tienen que hacer la verificación de todos los otros errores de las llamadas al sistema relevantes, pero algunos de esos errores no deberían causar la terminación de <code>rautomake</code>.</p></li>
+                                        <li><p>Como siempre, la decisión que tomen debería estar orientada a aumentar la calidad y reducir el esfuerzo.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p11">
+                                <h3>Posibilidad de prórroga</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>PS: a la final movieron la fecha del proyecto al jueves?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>Las profesoras a cargo del curso decidieron que si reciben una carta solicitando la prórroga con las firmas de más de la mitad de los inscritos, harán que la fecha de entrega sea 16 horas más tarde de la que dice en el enunciado: quedaría para el mediodía del miércoles 2012‒03‒28 en la hora legal de Venezuela.  El anuncio oficial está en el foro del sistema Moodle.</p></li>
                                 </ol>
                         </li>
                 </ol>
