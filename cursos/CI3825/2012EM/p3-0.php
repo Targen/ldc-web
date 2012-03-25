@@ -28,6 +28,8 @@
                         <li><a href="#p9" >Corrupción de memoria por <em>buffer overflow</em>s                                    </a></li>
                         <li><a href="#p10">Verificación de permisos                                                               </a></li>
                         <li><a href="#p11">Posibilidad de prórroga                                                                </a></li>
+                        <li><a href="#p12">Directorio de trabajo y resolución de caminos de GCC                                   </a></li>
+                        <li><a href="#p13">Uso de shell scripting para implementar el proyecto                                    </a></li>
                 </ol>
                 <ol>
                         <li id="p1">
@@ -256,6 +258,39 @@ clean:
                                 <h4>Respuesta</h4>
                                 <ol>
                                         <li><p>Las profesoras a cargo del curso decidieron que si reciben una carta solicitando la prórroga con las firmas de más de la mitad de los inscritos, harán que la fecha de entrega sea 16 horas más tarde de la que dice en el enunciado: quedaría para el mediodía del miércoles 2012‒03‒28 en la hora legal de Venezuela.  El anuncio oficial está en el foro del sistema Moodle.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p12">
+                                <h3>Directorio de trabajo y resolución de caminos de GCC</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Tenemos dudas con el uso de la función exec que nos genere el archivo ".d" con las dependencias de cada archivo ".c":</p></li>
+                                                <li><p>estábamos intentando con: execl("/usr/bin/gcc","gcc","-E","-MMD",nombre,NULL); donde "nombre" es el nombre del archivo. pero captando el error nos dice que no encuentra el archivo.(errno=2)</p></li>
+                                                <li><p>Intentamos pasando el archivo como un char, abriendo el archivo y pasando su fd y nada, sigue sin encontrar el archivo. (Ya verificamos que estamos en el directorio correcto)</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>El proceso de <code>gcc</code> que se crea buscará un archivo cuyo camino sea lo que haya en <code>nombre</code>. Si ese camino es relativo, lo buscará desde el directorio de trabajo de ese proceso, que es el mismo directorio de trabajo de su padre (a menos que lo cambien con <code>chdir</code>).</p></li>
+                                        <li><p>Si <code>nombre</code> contenía algo como <code>parser.c</code>, entonces se buscará un archivo llamado <code>parser.c</code> en el directorio de trabajo del proceso. Si <code>parser.c</code> estaba en un directorio anidado en alguna parte de donde corrieron <code>rautomake</code> y no en la raíz, y si nunca cambiaron el directorio de trabajo, no lo va a conseguir.</p></li>
+                                        <li><p>La solución, claro, es que cada vez que visitan un directorio, cambien el directorio de trabajo del proceso a ese directorio que visitan.</p></li>
+                                        <li><p>También podrían ir concatenando las componentes de camino a los nombres que le pasan a GCC, pero entonces generaría las dependencias con componentes de caminos, y los <code>Makefile</code>s de cada subdirectorio procesan los caminos a archivos desde donde está el <code>Makefile</code>, así que tendrían que arreglarlos… no es una buena solución.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p13">
+                                <h3>Uso de shell scripting para implementar el proyecto</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Por otro lado, el proyecto debe ser realizado totalmente en lenguaje C correcto? nada de shell script?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>En efecto. Es válido que usen shell scripts para cualquier tarea de automatización de generación de código o compilación (aunque debe poder compilarse ejecutando <code>make</code> en el directorio de su proyecto), pero el propio código del proyecto debe terminar reduciéndose a archivos en el lenguaje de programación C. Además, el enunciado especifica ciertas restricciones sobre la implementación: debe usarse <code>fork</code> y <code>exec</code> en algunas partes para hacer ciertas cosas. Es decir que no se vale que su programa consista de <code>if (fork() == 0) execl("/bin/bash", "bash", "-c", "</code><em>un script que resuelva todo</em><code>", NULL);</code>.</p></li>
+                                        <li><p>Este proyecto es notablemente sencillo si se hace con un shell script, así que es natural que quieran resolverlo al menos parcialmente con esas herramientas que son las más adecuadas para el problema. Eso, junto a las razones para no usar Make recursivamente que se detallan en el paper referido en el enunciado, hace que este proyecto no sea software muy bien diseñado para uso real. Sus objetivos son pedagógicos y no prácticos: la idea es hacer algo interesante que les enseñe a trabajar con árboles de procesos y jerarquías de archivos usando C, solidificar su entendimiento de Make e introducir el concepto de programas que generan programas, que es fundamental para la carrera.</p></li>
+                                        <li><p>Hacer este proyecto en C no tiene sentido práctico real, pero es un buen ejercicio.</p></li>
                                 </ol>
                         </li>
                 </ol>
