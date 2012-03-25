@@ -17,9 +17,9 @@
                 <h2>2012‒03‒18 (semana 7): Consultas del segundo proyecto</h2>
                 <p>Acá les dejo las preguntas y respuestas de varias consultas que me han hecho estudiantes del curso sobre el segundo proyecto.  Espero que les sirvan.</p>
                 <ol>
-                        <li><a href="#p1" >Orden de las reglas en los <code>Makefile</code>s                                      </a></li>
-                        <li><a href="#p2" >Movimiento del cursor de un archivo abierto                                            </a></li>
-                        <li><a href="#p2" >Estrategias para generación de los <code>Makefiles</code> con un orden específico      </a></li>
+                        <li><a href="#p1" >Movimiento del cursor de un archivo abierto                                            </a></li>
+                        <li><a href="#p2" >Orden de las reglas en los <code>Makefile</code>s                                      </a></li>
+                        <li><a href="#p3" >Estrategias para generación de los <code>Makefiles</code> con un orden específico      </a></li>
                         <li><a href="#p4" >Requerimientos sobre archivos <code>.d</code> generados                                </a></li>
                         <li><a href="#p5" >Significado y ubicación de reglas para el <em>target</em> especial <code>.PHONY</code> </a></li>
                         <li><a href="#p6" >Orden de las reglas en un <code>Makefile</code>                                        </a></li>
