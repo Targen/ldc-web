@@ -31,6 +31,7 @@
                         <li><a href="#p12">Directorio de trabajo y resolución de caminos de GCC                                   </a></li>
                         <li><a href="#p13">Uso de shell scripting para implementar el proyecto                                    </a></li>
                         <li><a href="#p14">Uso no estructurado de <code>fork</code>                                               </a></li>
+                        <li><a href="#p15">Makefile de <code>rautomake</code>                                                     </a></li>
                 </ol>
                 <ol>
                         <li id="p1">
@@ -363,6 +364,23 @@ int main() {
                                         <li><p>Analizar un programa así es sumamente difícil, y es muy fácil equivocarse y hacer que el programa haga <code>fork</code> infinitamente produciendo algo llamado <em>fork bomb</em>: el programa no para de duplicarse y se satura la tabla de procesos del sistema, lo que dificulta ejecutar cualquier programa, como <code>kill</code>, para terminar su ejecución (y el sistema deja de funcionar).</p></li>
                                         <li><p>La mejor manera de evitar estos problemas es nunca escribir un <code>fork</code> no estructurado: el código del hijo debería ejecutarlo únicamente el hijo, y el código del padre debería ejecutarlo únicamente el padre.</p></li>
                                         <li><p>Claro, hay muchos problemas donde el hijo debe ejecutar lo mismo que el padre con otros parámetros: cualquier función recursiva podría ejecutarse con una sola invocación por proceso haciendo las invocaciones recursivas en hijos. Este proyecto tiene una estructura recursiva que hace que esta técnica sea muy natural. Pero en cualquier caso habría una frontera bien definida entre el código del padre y el código del hijo: el hijo solo ejecuta la llamada recursiva y su ejecución termina al salir de la función, o la función nunca retorna.</p></li>
+                                </ol>
+                        </li>
+                        <li id="p15">
+                                <h3>Makefile de <code>rautomake</code></h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Una cosita, nosotros debemos crear un makefile para compilar rautomake. Pero no entiendo como se usara ese makefile desde la carpeta multidoc por ejemplo para compilar ahi el rautomake??</p></li>
+                                                <li><p>O es solo para compilar rautomake dentro de su propia carpeta??</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p><code>rautomake</code> se compila en su propio directorio: el que estén usando para desarrollar su proyecto que contiene su código fuente. Ahí es que tiene que estar el <code>Makefile</code> que deben escribir igual que como hicieron en los otros proyectos.</p></li>
+                                        <li><p>Una vez compilado <code>rautomake</code>, su ejecutable será invocado desde otro directorio que no tiene nada que ver con el directorio de las fuentes de <code>rautomake</code>; por ejemplo, será invocado dentro de <code>multidoc</code>.</p></li>
+                                        <li><p>La ubicación del ejecutable no tiene nada que ver con la ubicación en la que ese ejecutable es invocado, claro. Si ejecutan <code>/bin/ls</code> en su directorio de trabajo del proyecto, se ejecutará el programa <code>ls</code>, cuyo ejecutable está en <code>/bin</code>, pero no se ejecutará en <code>/bin</code> sino en su directorio de trabajo del proyecto, y su salida mostraría cosas como <code>Makefile</code> y <code>rautomake.c</code> (el contenido de donde fue ejecutado, porque eso es lo que hace <code>ls</code>), y <strong>no</strong> cosas como <code>ls</code>, <code>cat</code> y <code>bash</code> (que es lo que hay donde está el ejecutable, pero la ubicación del ejecutable no influye en absoluto sobre su ejecución).</p></li>
+                                        <li><p>Pero claro, la invocación no dirá <code>./rautomake</code> sino quizás <code>../rautomake</code>, o algo como <code>/home/manuel/prepas/so1/proy2/grupo22/rautomake</code>.</p></li>
                                 </ol>
                         </li>
                 </ol>
