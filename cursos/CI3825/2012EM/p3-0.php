@@ -12,7 +12,7 @@
         </head>
 
         <body>
-                <h1><a href="../../../..">Manuel Gómez</a> — <a href="../../..">Cursos</a> — <a href="../..">CI3825</a> — <a href="..">Enero–Marzo de 2012</a></h1>
+                <h1><a href="../../..">Manuel Gómez</a> — <a href="../..">Cursos</a> — <a href="..">CI3825</a> — <a href=".">Enero–Marzo de 2012</a></h1>
                 <hr/>
                 <h2>2012‒03‒18 (semana 7): Consultas del segundo proyecto</h2>
                 <p>Acá les dejo las preguntas y respuestas de varias consultas que me han hecho estudiantes del curso sobre el segundo proyecto.  Espero que les sirvan.</p>

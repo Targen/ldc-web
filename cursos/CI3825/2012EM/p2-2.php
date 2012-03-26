@@ -15,7 +15,7 @@
         </head>
 
         <body>
-                <h1><a href="../../../..">Manuel Gómez</a> — <a href="../../..">Cursos</a> — <a href="../..">CI3825</a> — <a href="..">Enero–Marzo de 2012</a></h1>
+                <h1><a href="../../..">Manuel Gómez</a> — <a href="../..">Cursos</a> — <a href="..">CI3825</a> — <a href=".">Enero–Marzo de 2012</a></h1>
                 <hr/>
                 <h2>2012‒02‒21 (semana 7): Otra consulta del primer proyecto</h2>
                 <p>Acá les dejo mi respuesta a una consulta que recibí sobre el primer proyecto.  Espero que les sirva.</p>

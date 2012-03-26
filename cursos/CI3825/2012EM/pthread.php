@@ -12,7 +12,7 @@
         </head>
 
         <body>
-                <h1><a href="../../../..">Manuel Gómez</a> — <a href="../../..">Cursos</a> — <a href="../..">CI3825</a> — <a href="..">Enero–Marzo de 2012</a></h1>
+                <h1><a href="../../..">Manuel Gómez</a> — <a href="../..">Cursos</a> — <a href="..">CI3825</a> — <a href=".">Enero–Marzo de 2012</a></h1>
                 <hr/>
                 <h2>2012‒02‒13 (semana 6): Ejemplos de sincronización para hilos POSIX</h2>
                 <p>El fin de semana pasado escribí un par de ejemplos básicos del trabajo con primitivas de sincronización para hilos POSIX; son los que les mostré al inicio de la clase de hoy.  El código está publicado en <a href="https://github.com/Targen/CI3825">el repositorio que tengo en GitHub para cosas del curso</a>, y ahí seguiré publicando modificaciones a ese código si hacen falta, así como cualquier otro ejemplo que vaya saliendo.</p>
