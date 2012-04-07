@@ -21,12 +21,13 @@
                 <p>Mis clases de práctica son en la sala E de las aulas computarizadas de MYS (en el ala norte de la planta baja), los martes desde las 13:30 UTC−4:30 hasta que la gente se canse de oírme hablar pendejadas o nos saquen de la sala; aparentemente, la sala donde es la clase está reservada para otro curso desde las 15:30 UTC−4:30.</p>
                 <hr/>
                 <ol>
-                        <li><a href="scanf"  >2012‒01‒28 (semana  3): Sugerencias para la tarea                  </a></li>
-                        <li><a href="p2"     >2012‒02‒07 (semana  5): Consultas del primer proyecto              </a></li>
-                        <li><a href="pthread">2012‒02‒13 (semana  6): Ejemplos de sincronización para hilos POSIX</a></li>
-                        <li><a href="p2-2"   >2012‒02‒21 (semana  7): Otra consulta del primer proyecto          </a></li>
-                        <li><a href="p2-3"   >2012‒02‒24 (semana  7): Más consultas del primer proyecto          </a></li>
-                        <li><a href="p3-0"   >2012‒03‒18 (semana 10): Consultas del segundo proyecto             </a></li>
+                        <li><a href="scanf"  >2012‒01‒28 (semana     3): Sugerencias para la tarea                           </a></li>
+                        <li><a href="p2"     >2012‒02‒07 (semana     5): Consultas del primer proyecto                       </a></li>
+                        <li><a href="pthread">2012‒02‒13 (semana     6): Ejemplos de sincronización para hilos POSIX         </a></li>
+                        <li><a href="p2-2"   >2012‒02‒21 (semana     7): Otra consulta del primer proyecto                   </a></li>
+                        <li><a href="p2-3"   >2012‒02‒24 (semana     7): Más consultas del primer proyecto                   </a></li>
+                        <li><a href="p3-0"   >2012‒03‒18 (semana    10): Consultas del segundo proyecto                      </a></li>
+                        <li><a href="notas"  >2012‒04‒06 (semana santa): Notas completas, pre‐revisión (<strong>PDF</strong>)</a></li>
                 </ol>
                 <hr/>
                 <p>
