@@ -14,7 +14,7 @@
         <body>
                 <h1><a href="../../..">Manuel Gómez</a> — <a href="../..">Cursos</a> — <a href="..">CI3725</a> — <a href=".">Abril–Julio de 2012</a></h1>
                 <hr/>
-                <h2>2012‒03‒18 (semana 7): Consultas de la primera entrega del proyecto</h2>
+                <h2>2012‒05‒04 (semana 2): Consultas de la primera entrega del proyecto</h2>
                 <p>Acá les dejo las preguntas y respuestas de varias consultas que me han hecho estudiantes del curso sobre el segundo proyecto.  Espero que les sirvan.</p>
                 <ol>
                         <li><a href="#pregunta1">Lectura de entrada y mecanismo de ejecución</a></li>
