@@ -170,11 +170,11 @@ of
                                 <blockquote>
                                         <ol>
                                                 <li><p>Estoy utilizando python, y estoy teniendo problemas con el token of type, porque dado que uno de los caracteres ignorados es el espacio en blanco, primero reconoce a of como identificador, y luego type como identificador. He hecho algunos "trucos" con la finalidad de que reconozca el token completo, pero estos "trucos" me generan otros problemas cuando aparece of type o alguna variante de ella, algunos de ellos (son de soluciones/trucos distintos):</p></li>
-                                                <li><ul>
+                                                <li><ol>
                                                         <li><p>Si codigo de entrada tiene oftype lo reconoce como token de of type.</p></li>
                                                         <li><p>si aparece of type, muestra el token del of type, pero ademas reconoce a of como identificador..</p></li>
                                                         <li><p>y algunos otros...</p></li>
-                                                </ul></li>
+                                                </ol></li>
                                         </ol>
                                 </blockquote>
                                 <h4>Respuesta</h4>
