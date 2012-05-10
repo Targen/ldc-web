@@ -17,8 +17,11 @@
                 <h2>2012‒05‒04 (semana 2): Consultas de la primera entrega del proyecto</h2>
                 <p>Acá les dejo las preguntas y respuestas de varias consultas que me han hecho estudiantes del curso sobre el segundo proyecto.  Espero que les sirvan.</p>
                 <ol>
-                        <li><a href="#pregunta1">Lectura de entrada y mecanismo de ejecución</a></li>
-                        <li><a href="#pregunta2">Tipos de datos para los <em>token</em>s    </a></li>
+                        <li><a href="#pregunta1">Lectura de entrada y mecanismo de ejecución                                             </a></li>
+                        <li><a href="#pregunta2">Tipos de datos para los <em>token</em>s                                                 </a></li>
+                        <li><a href="#pregunta3">Comentarios incompletos y errores léxicos                                               </a></li>
+                        <li><a href="#pregunta4"><em>Token</em> para <code>of type</code>: <code>TkOfType</code> vs. <code>TkIdent</code></a></li>
+                        <li><a href="#pregunta5">Problemas de <code>of type</code> específicos a Python+PLY                              </a></li>
                 </ol>
                 <ol>
                         <li id="pregunta1">
@@ -96,6 +99,88 @@ java LexAsgard
                                 <ol>
                                         <li><p>La idea es que no solamente deben imprimir por pantalla en el formato especificado cuáles son los <em>token</em>s encontrados (si no hubo errores), sino que deberían tener a los <em>token</em>s representados como entes independientes en su programa según sea adecuado en su lenguaje. En Haskell deben hacer un tipo abstracto de datos (con <code>data</code>); en C++ lo ideal sería una tupla o un registro con un valor de un <code>enum class</code> y el dato contenido si lo hay; en Ruby querrán definir una clase para cada <em>token</em> (y pueden aprovechar técnicas de metaprogramación para hacerlo con mucha facilidad); en el caso de Python con PLY, que no trabaja con tipos distintos para cada <em>token</em> sino con reflexión y variables con nombres especiales, ese requerimiento tiene poco sentido, pero podrían arreglárselas con una simple tupla.</p></li>
                                         <li><p>El problema con ese requerimiento del enunciado es que no puede ser demasiado específico por la diversidad de lenguajes que pueden usar para el proyecto. En general la idea es que no se limiten a simplemente imprimir los <em>token</em>s cuando los encuentren, sino que tengan alguna estructura de datos independiente que los represente y almacene.</p></li>
+                                </ol>
+                        </li>
+                        <li id="pregunta3">
+                                <h3>Comentarios incompletos y errores léxicos</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Sabemos que los comentarios son de la siguiente forma: "{- comentario -}", pero que sucede si No se cierra "-}", ? Es decir: "{- comentario ... Fin de archivo". Es tomado "{-" como caracter invalido o desde "{- hasta el fin d archivo" seria un comentario?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>La sección 5 de la especificación del lenguaje dice</p></li>
+                                        <li><blockquote>
+                                                <p>En AsGArD es posible comentar secciones completas del programa, para que sean ignorados [sic] por el interpretador del lenguaje, <strong>encerrando</strong> dicho código entre los símbolos “<code>{-</code>” y “<code>-}</code>”.</p>
+                                        </blockquote></li>
+                                        <li><p>(Énfasis mío.)  Según esta definición, un inicio de comentario que no tenga en alguna parte del archivo un fin de comentario que le corresponda no definiría un comentario, porque no hay texto <em>encerrado</em> entre esas secuencias.  En ese caso, el <code>{</code> sería un caracter inválido, el <code>-</code> sería el <em>token</em> correspondiente a la resta o el inverso aritmético, y todo lo demás se procesaría como código del programa.  Claro, como ya habrían encontrado un caracter ilegal, así que no les interesaría producir esos <em>tokens</em> sino encontrar más errores e imprimirlos todos al final.</p></li>
+                                </ol>
+                        </li>
+                        <li id="pregunta4">
+                                <h3><em>Token</em> para <code>of type</code>: <code>TkOfType</code> vs. <code>TkIdent</code></h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>2- En cuanto a la palabra reservada of type. Of junto a type forman una palabra reservada? O por separado tambien lo son? Es decir, of (sola) es palabra reservada y type (sola) tambien es palabra reservada? Si esto no fuera asi, entonces existe la posibilidad de que of sea un identificador, al igual que type.</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>El enunciado de la primera etapa del proyecto especifica que las palabras <code>of</code> y <code>type</code> juntas constituyen un único <em>token</em> en conjunto. El problema es que no se especifica con mucha claridad lo que significa que estén juntas. Consulté este asunto con los autores de la especificación (Ricardo y Carlos, los profesores de la teoría) y la aclaratoria fue que deben estar separadas por espacios en blanco de cualquier tipo y en cualquier cantidad. Los espacios, tabuladores y fines de línea regulares son espacios en blanco, y también lo son los comentarios. Por ejemplo, este código debería producir 7 <em>tokens</em> del tipo <code>TkOfType</code>:</p></li>
+                                        <li><blockquote>
+<pre><code><![CDATA[
+of type     {- Con un espacio normal        -}
+of	type    {- Con un tabulador             -}
+of
+type        {- Con un fin de línea          -}
+of         
+       
+   		          
+         		   	
+type        {- Con muchos de los anteriores -}
+of{- Con un comentario -}type
+of{-Con-}{- varios -}{- comentarios -}type
+of    {- Con
+
+      	        un-}	   	   {-
+     poco de
+todo-}type
+]]></code></pre>
+                                        </blockquote></li>
+                                        <li><p>Este código, en cambio, solo debería producir <em>tokens</em> del tipo <code>TkIdent</code>:</p></li>
+                                        <li><blockquote>
+<pre><code><![CDATA[
+of type1
+oftype
+of typeof type
+Of type
+of typealgo
+algoof type
+type
+of
+]]></code></pre>
+                                        </blockquote></li>
+                                </ol>
+                        </li>
+                        <li id="pregunta5">
+                                <h3>Problemas de <code>of type</code> específicos a Python+PLY</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Estoy utilizando python, y estoy teniendo problemas con el token of type, porque dado que uno de los caracteres ignorados es el espacio en blanco, primero reconoce a of como identificador, y luego type como identificador. He hecho algunos "trucos" con la finalidad de que reconozca el token completo, pero estos "trucos" me generan otros problemas cuando aparece of type o alguna variante de ella, algunos de ellos (son de soluciones/trucos distintos):</p></li>
+                                                <li><ul>
+                                                        <li><p>Si codigo de entrada tiene oftype lo reconoce como token de of type.</p></li>
+                                                        <li><p>si aparece of type, muestra el token del of type, pero ademas reconoce a of como identificador..</p></li>
+                                                        <li><p>y algunos otros...</p></li>
+                                                </ul></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>Una de las cualidades peculiares y poco intuitivas de PLY es que el procesamiento de las expresiones regulares que se le especifiquen se realiza con una opción de la implantación de expresiones regulares de Python que hace que se ignoren los espacios en la expresión. El propósito de ese modo de operación es que se puedan escribir expresiones regulares largas y complejas separando sus partes con espacios, incluso en múltiples líneas y con comentarios, sin que esos espacios y comentarios alteren sus significados. A esto se debe que el <em>string</em> de Python <code>'of type'</code> reconozca las dos palabras juntas y no reconozca a dos palabras separadas por un espacio: PLY no ve ese espacio. Una solución sencilla es escribir algo como <code>'of[ ]type'</code>, pero como también deben poder ser reconocidos <em>tokens</em> <code>TkOfType</code> con muchos espacios en blanco en medio, incluyendo comentarios, la expresión regular sería bastante más compleja que eso. Pueden leer detalles sobre ese modo de operación en <a href="http://docs.python.org/library/re.html#re.X"><code class="url">http://docs.python.org/library/re.html#re.X</code></a>.</p></li>
+                                        <li><p>También deben tomar en cuenta la forma en la que PLY decide cuál <em>token</em> emitir cuando hay más de una posibilidad porque las expresiones regulares de dos o más <em>tokens</em> describan lenguajes que no son disjuntos. En particular, <code>of type</code> puede reconocerse como un <em>token</em> <code>TkOfType</code>, pero también podría reconocerse un <em>token</em> <code>TkOf</code>. La documentación de PLY (en <a href="https://www.dabeaz.com/ply/ply.html"><code class="url">https://www.dabeaz.com/ply/ply.html</code></a>) especifica los mecanismos que tiene (su versión actual) para decidir entre las posibilidades situaciones de ambigüedad como esa. En general, se emite el <em>token</em> correspondiente a la primera expresión regular cuyo reconocimiento sobre el inicio de la entrada resulte exitoso, y lo importante es determinar en qué orden se evalúan.</p></li>
                                 </ol>
                         </li>
                 </ol>
