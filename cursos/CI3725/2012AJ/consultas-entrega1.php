@@ -22,6 +22,9 @@
                         <li><a href="#pregunta3">Comentarios incompletos y errores léxicos                                               </a></li>
                         <li><a href="#pregunta4"><em>Token</em> para <code>of type</code>: <code>TkOfType</code> vs. <code>TkIdent</code></a></li>
                         <li><a href="#pregunta5">Problemas de <code>of type</code> específicos a Python+PLY                              </a></li>
+                        <li><a href="#pregunta6">Punto de entrada en lenguajes dinámicos                                                 </a></li>
+                        <li><a href="#pregunta7">Lectura por entrada estándar                                                            </a></li>
+                        <li><a href="#pregunta8">Informe                                                                                 </a></li>
                 </ol>
                 <ol>
                         <li id="pregunta1">
@@ -181,6 +184,65 @@ of
                                 <ol>
                                         <li><p>Una de las cualidades peculiares y poco intuitivas de PLY es que el procesamiento de las expresiones regulares que se le especifiquen se realiza con una opción de la implantación de expresiones regulares de Python que hace que se ignoren los espacios en la expresión. El propósito de ese modo de operación es que se puedan escribir expresiones regulares largas y complejas separando sus partes con espacios, incluso en múltiples líneas y con comentarios, sin que esos espacios y comentarios alteren sus significados. A esto se debe que el <em>string</em> de Python <code>'of type'</code> reconozca las dos palabras juntas y no reconozca a dos palabras separadas por un espacio: PLY no ve ese espacio. Una solución sencilla es escribir algo como <code>'of[ ]type'</code>, pero como también deben poder ser reconocidos <em>tokens</em> <code>TkOfType</code> con muchos espacios en blanco en medio, incluyendo comentarios, la expresión regular sería bastante más compleja que eso. Pueden leer detalles sobre ese modo de operación en <a href="http://docs.python.org/library/re.html#re.X"><code class="url">http://docs.python.org/library/re.html#re.X</code></a>.</p></li>
                                         <li><p>También deben tomar en cuenta la forma en la que PLY decide cuál <em>token</em> emitir cuando hay más de una posibilidad porque las expresiones regulares de dos o más <em>tokens</em> describan lenguajes que no son disjuntos. En particular, <code>of type</code> puede reconocerse como un <em>token</em> <code>TkOfType</code>, pero también podría reconocerse un <em>token</em> <code>TkOf</code>. La documentación de PLY (en <a href="https://www.dabeaz.com/ply/ply.html"><code class="url">https://www.dabeaz.com/ply/ply.html</code></a>) especifica los mecanismos que tiene (su versión actual) para decidir entre las posibilidades situaciones de ambigüedad como esa. En general, se emite el <em>token</em> correspondiente a la primera expresión regular cuyo reconocimiento sobre el inicio de la entrada resulte exitoso, y lo importante es determinar en qué orden se evalúan.</p></li>
+                                </ol>
+                        </li>
+                        <li id="pregunta6">
+                                <h3>Lectura por entrada estándar</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>En el enunciado dice que la entrada será por entrada estándar. Ahora, se introduce el código a analizar y para indicar que terminó, es valido que deba pulsar control D para indicar el eof, o se debe utilizar un archivo y redireccionar?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>Es equivalente en todos los casos que importan.</p></li>
+                                        <li><p>La manera más sencilla de hacer el flujo principal de ejecución de un <em>lexer</em> (y todo lo que le sigue) es leer la totalidad de la entrada a una cadena de caracteres en memoria y trabajar únicamente con eso. No es lo ideal: sería preferible leer en forma incremental y perezosa, consumiendo caracteres de la entrada estándar y ejecutando poco a poco las transiciones del autómata que produce los <em>tokens</em>. Haskell con Alex hace eso de forma prácticamente transparente; en los demás lenguajes probablemente se podría programar, pero no es demasiado práctico, así que es mejor usar la solución costosa pero sencilla.</p></li>
+                                        <li><p>La diferencia en el comportamiento de leer poco a poco o leer todo antes de analizar sería que si escriben la entrada directamente en el terminal, podría empezar a reconocerse antes de que terminen si leen poco a poco, mientras que en el caso normal solo se emitirían <em>tokens</em> cuando la entrada estándar indique que no hay más datos por leer. Al final es equivalente, y eso no cambia el resultado en absoluto. No es algo que haga falta tomar en cuenta.</p></li>
+                                </ol>
+                        </li>
+                        <li id="pregunta7">
+                                <h3>Punto de entrada en lenguajes dinámicos</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>[estoy trabajando con python] Se debe contar con un main? En caso de que sea así, es en el donde se lee la entrada, se obtienen los tokens y se imprime? O es indiferente?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>A diferencia de lo que suele hacerse en la mayoría de los lenguajes compilados, los lenguajes imperativos interpretados y dinámicos como Python, Ruby, Perl y muchos más no definen su punto de entrada en un procedimiento con un nombre especial, como el típico <code>main</code>, sino que el código se ejecuta desde el inicio del archivo a interpretar. A pesar de que es totalmente innecesario para lograr que el código se ejecute, es común encontrar código en Python estructurado así:</p></li>
+                                        <li><blockquote>
+<pre><code><![CDATA[
+def main():
+        # Código principal del programa
+        ...
+
+if __name__ == '__main__':
+        main()
+]]></code></pre>
+                                        </blockquote></li>
+                                        <li><p>Las razones para hacer esto incluyen que pudiera querer usarse ese procedimiento principal en forma recursiva (al darle un nombre se vuelve posible llamarlo explícitamente), y que podría ser deseable evitar que se ejecute el programa si el código no es ejecutado directamente sino que es cargado por otro módulo para reutilizar parte de su funcionalidad. Si un archivo estructurado así se carga directamente por la ejecución de ese archivo de código sobre el interpretador, el cuerpo del condicional se ejecuta y se corre esa función; si la carga de ese código fue indirecta, el cuerpo del condicional no se ejecuta, así que la función <code>main</code> no corre, pero sí se cargan todas las definiciones del archivo (y se ejecutan las demás instrucciones que estén al nivel raíz).</p></li>
+                                        <li><p>En resumen: no es necesario, pero pueden hacerlo si por alguna razón les conviene por el diseño de su código.</p></li>
+                                </ol>
+                        </li>
+                        <li id="pregunta8">
+                                <h3>Informe</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>En el enunciado se indica que debemos entregar un breve informe. Esto que debe contener?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>El informe que deben entregar está compuesto de dos partes:</p></li>
+                                        <li><ol>
+                                                <li><p>Una explicación breve de las decisiones de diseño que tomaran en su implantación del analizador lexicográfico. La idea no es que digan cosas obvias, como que el proyecto es un <em>lexer</em> o que usaron expresiones regulares, sino cualquier detalle que les parezca relevante sobre su implementación, como las técnicas que usaron para escribir las expresiones regulares más complicadas, o una explicación básica del flujo de ejecución del <em>lexer</em> si lo hacen a mano (para los que usan Ruby), o cualquier cosa de ese estilo.</p>
+                                                <p>Es importante destacar la manera en la que se especifica que deben entregar esta parte del proyecto: se habla de un “<em><em>breve</em></em> informe”, y la palabra “breve” está subrayada y resaltada en itálicas. No se compliquen demasiado con eso: la idea es que todo proyecto de software, por simple que sea, implica ciertas decisiones básicas de diseño, de diseño de la implantación, y de implantación (que suena redundante, pero no lo es), y es bueno documentar esas decisiones.</p></li>
+                                                <li><p>Las respuestas a los problemas de la <em>revisión teórico-práctica</em>. Esta parte del informe originalmente se entregaría junto con la primera parte y con el código, pero su entrega fue postergada por una semana porque algunos de los problemas requieren que conozcan partes de la teoría del curso que aun no se han cubierto en clase por cambios en el cronograma.</p></li>
+                                        </ol></li>
+                                        <li><p>Por lo que más quieran, no lo hagan con Office ni nada parecido. Texto plano, Markdown o afines que son casi lo mismo, LaTeX si tienen mucho tiempo libre, o árbol muerto si prefieren lo <em>retro</em>. Al que me envíe un <code>.doc</code> le instalo Windows Millenium Edition.</p></li>
                                 </ol>
                         </li>
                 </ol>
