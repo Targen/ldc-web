@@ -22,8 +22,8 @@
                         <li><a href="#pregunta3">Comentarios incompletos y errores léxicos                                               </a></li>
                         <li><a href="#pregunta4"><em>Token</em> para <code>of type</code>: <code>TkOfType</code> vs. <code>TkIdent</code></a></li>
                         <li><a href="#pregunta5">Problemas de <code>of type</code> específicos a Python+PLY                              </a></li>
-                        <li><a href="#pregunta6">Punto de entrada en lenguajes dinámicos                                                 </a></li>
-                        <li><a href="#pregunta7">Lectura por entrada estándar                                                            </a></li>
+                        <li><a href="#pregunta6">Lectura por entrada estándar                                                            </a></li>
+                        <li><a href="#pregunta7">Punto de entrada en lenguajes dinámicos                                                 </a></li>
                         <li><a href="#pregunta8">Informe                                                                                 </a></li>
                 </ol>
                 <ol>
