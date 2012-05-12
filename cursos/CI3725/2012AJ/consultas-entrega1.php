@@ -246,7 +246,6 @@ if __name__ == '__main__':
                                         <li><p>Por lo que más quieran, no lo hagan con Office ni nada parecido. Texto plano, Markdown o afines que son casi lo mismo, LaTeX si tienen mucho tiempo libre, o árbol muerto si prefieren lo <em>retro</em>. Al que me envíe un <code>.doc</code> le instalo Windows Millenium Edition.</p></li>
                                 </ol>
                         </li>
-                </ol>
                         <li id="pregunta9">
                                 <h3>Espacio en blanco y delimitadores de literales de lienzo en el formato de salida</h3>
                                 <h4>Pregunta</h4>
