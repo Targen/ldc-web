@@ -25,6 +25,7 @@
                         <li><a href="#pregunta6">Lectura por entrada estándar                                                            </a></li>
                         <li><a href="#pregunta7">Punto de entrada en lenguajes dinámicos                                                 </a></li>
                         <li><a href="#pregunta8">Informe                                                                                 </a></li>
+                        <li><a href="#pregunta9">Espacio en blanco y delimitadores de literales de lienzo en el formato de salida        </a></li>
                 </ol>
                 <ol>
                         <li id="pregunta1">
@@ -243,6 +244,42 @@ if __name__ == '__main__':
                                                 <li><p>Las respuestas a los problemas de la <em>revisión teórico-práctica</em>. Esta parte del informe originalmente se entregaría junto con la primera parte y con el código, pero su entrega fue postergada por una semana porque algunos de los problemas requieren que conozcan partes de la teoría del curso que aun no se han cubierto en clase por cambios en el cronograma.</p></li>
                                         </ol></li>
                                         <li><p>Por lo que más quieran, no lo hagan con Office ni nada parecido. Texto plano, Markdown o afines que son casi lo mismo, LaTeX si tienen mucho tiempo libre, o árbol muerto si prefieren lo <em>retro</em>. Al que me envíe un <code>.doc</code> le instalo Windows Millenium Edition.</p></li>
+                                </ol>
+                        </li>
+                </ol>
+                        <li id="pregunta9">
+                                <h3>Espacio en blanco y delimitadores de literales de lienzo en el formato de salida</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Buenos dias, tengo la siguiente duda, cuando imprimimos los tokens, esta impresion debe ser lineal, o debe imprimirse un token en cada linea? O da igual la forma en que decidamos imprimir??</p></li>
+                                                <li><p>Ejemplo:</p></li>
+                                                <li><blockquote>
+<pre><code><![CDATA[
+TkUsing TkOfType TkIdent("hola") TkLienzo("</>")
+]]></code></pre>
+                                                </blockquote></li>
+                                                <li><p>o</p></li>
+                                                <li><blockquote>
+<pre><code><![CDATA[
+TkUsing
+TkOfType
+TkIdent("hola")
+TkLienzo("</>")
+]]></code></pre>
+                                                </blockquote></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>El enunciado de la primera etapa en efecto especifica ese detalle del formato de salida con poca precisión: se presentan dos ejemplos donde se muestra la representación textual de varios <em>tokens</em> por línea separados por espacios regulares, pero hay varias líneas.</p></li>
+                                        <li><p>Presumo que la razón de esa imprecisión es que no es muy importante: separar las representaciones textuales de los <em>tokens</em> con fines de línea o con espacios regulares es equivalente para lo que importa: que la salida pueda reconocerse sin ambigüedad.</p></li>
+                                        <li><p>Un detalle que sí está especificado y que deben tomar en cuenta es que la representación textual de los <em>tokens</em> de literales de lienzo no debe incluir a los símbolos <code>&lt;</code> ni <code>&gt;</code> según el punto 5 de la primera lista del enunciado de la primera etapa del proyecto:</p></li>
+                                        <li><blockquote>
+                                                <ul>
+                                                        <li>Los literales lienzos, los cuales serán uno de los siguientes: <code>&lt;empty&gt;</code>, <code>&lt;/&gt;</code>, <code>&lt;\&gt;</code>, <code>&lt;|&gt;</code>, <code>&lt;_&gt;</code>, <code>&lt;-&gt;</code> o <code>&lt; &gt;</code>. Todos estos serán representados por el token <code>TkLienzo</code>, parametrizado por el contenido envuelto entre los sìmbolos <code>&lt;</code> y <code>&gt;</code>. Por ejemplo, el literal de lienzo <code>&lt;/&gt;</code> será representado por <code>TkLienzo(&quot;/&quot;)</code>.</li>
+                                                </ul>
+                                        </blockquote></li>
                                 </ol>
                         </li>
                 </ol>
