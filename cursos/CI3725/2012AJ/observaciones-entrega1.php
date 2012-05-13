@@ -7,14 +7,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
                 <meta http-equiv="Content-type" content="application/xhtml+xml;charset=utf-8"/>
-                <title>Notas de Manuel Gómez sobre CI3725 — Observaciones sobre una entrega de la primera etapa del proyecto</title>
+                <title>Notas de Manuel Gómez sobre CI3725 — Observaciones sobre entregas de la primera etapa del proyecto</title>
                 <style type="text/css">p { text-align:justify; }</style>
         </head>
 
         <body>
                 <h1><a href="../../..">Manuel Gómez</a> — <a href="../..">Cursos</a> — <a href="..">CI3725</a> — <a href=".">Abril–Julio de 2012</a></h1>
                 <hr/>
-                <h2>2012‒05‒12 (semana 3): Observaciones sobre una entrega de la primera etapa del proyecto</h2>
+                <h2>2012‒05‒12 (semana 3): Observaciones sobre entregas de la primera etapa del proyecto</h2>
                 <p>Recibí algunas entregas con bastante tiempo antes de la fecha y hora límite para entregar la primera etapa del proyecto, y aproveché para hacer algunos comentarios rápidos sobre problemas que tienen.  Como los problemas con las entregas suelen ser los mismos, pienso que estos comentarios pueden resultar útiles a los demás.  Claro, no tienen demasiado sentido sin el código de las entregas, pero espero que igual sirvan de algo.</p>
                 <ol>
                         <li><p>La lectura de la entrada la hacen únicamente de un archivo fijo llamado <code>prueba.txt</code>, pero deberían obtener el programa a analizar únicamente de la entrada estándar.</p></li>
