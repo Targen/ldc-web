@@ -21,7 +21,8 @@
                 <p>Mis clases de práctica son en AUL017 los lunes desde las 13:30 VET hasta que la gente se canse de oírme hablar pendejadas o nos saquen del salón.</p>
                 <hr/>
                 <ol>
-                        <li><a href="consultas-entrega1">2012‒05‒04 (semana 2): Consultas de la primera entrega del proyecto</a></li>
+                        <li><a href="consultas-entrega1"    >2012‒05‒04 (semana 2): Consultas de la primera entrega del proyecto                    </a></li>
+                        <li><a href="observaciones-entrega1">2012‒05‒12 (semana 3): Observaciones sobre una entrega de la primera etapa del proyecto</a></li>
                 </ol>
                 <hr/>
                 <p>
