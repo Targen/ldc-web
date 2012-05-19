@@ -27,6 +27,8 @@
                         <li><a href="#pregunta8" >Informe                                                                                 </a></li>
                         <li><a href="#pregunta9" >Espacio en blanco y delimitadores de literales de lienzo en el formato de salida        </a></li>
                         <li><a href="#pregunta10">Transiciones λ en autómatas finitos determinísticos                                     </a></li>
+                        <li><a href="#pregunta11">Identificadores en la revisión teórico‐práctica                                         </a></li>
+                        <li><a href="#pregunta12">Estados finales en el autómata de la unión de varios lenguajes: ¿uno o muchos?          </a></li>
                 </ol>
                 <ol>
                         <li id="pregunta1">
@@ -136,15 +138,15 @@ java LexAsgard
                                         <li><p>El enunciado de la primera etapa del proyecto especifica que las palabras <code>of</code> y <code>type</code> juntas constituyen un único <em>token</em> en conjunto. El problema es que no se especifica con mucha claridad lo que significa que estén juntas. Consulté este asunto con los autores de la especificación (Ricardo y Carlos, los profesores de la teoría) y la aclaratoria fue que deben estar separadas por espacios en blanco de cualquier tipo y en cualquier cantidad. Los espacios, tabuladores y fines de línea regulares son espacios en blanco, y también lo son los comentarios. Por ejemplo, este código debería producir 7 <em>tokens</em> del tipo <code>TkOfType</code>:</p></li>
                                         <li><blockquote>
 <pre><code><![CDATA[
-of type     {- Con un espacio normal        -}
+of type         {- Con un espacio normal        -}
 of	type    {- Con un tabulador             -}
 of
-type        {- Con un fin de línea          -}
+type            {- Con un fin de línea          -}
 of         
        
    		          
          		   	
-type        {- Con muchos de los anteriores -}
+type            {- Con muchos de los anteriores -}
 of{- Con un comentario -}type
 of{-Con-}{- varios -}{- comentarios -}type
 of    {- Con
@@ -316,6 +318,42 @@ TkLienzo("</>")
                                         <li><p>En los DFAs, la función de transición recibe un estado y exactamente un símbolo que es tomado de la entrada. Como tiene que ser exactamente un símbolo, no puede ser una palabra vacía, y no es posible tener transiciones que no consuman exactamente un símbolo, como las transiciones λ que consumen cero símbolos.</p></li>
                                         <li><p>Más intuitivamente, un autómata con transiciones λ no puede ser considerado directamente determinístico por una razón que va más allá de las restricciones de la definición formal. Un autómata determinístico es uno en el cual el estado alcanzado al ejecutar la máquina con cualquier palabra es uno y solo uno al terminar de consumirla. Si un autómata tiene una transición λ entre un estado qᵢ y otro estado qⱼ, entonces siempre que la máquina llegue al estado qᵢ al terminar de consumir su entrada, podría también haber llegado al estado qⱼ. Como habría más de una posibilidad, no habría determinismo.</p></li>
                                         <li><p>Los algoritmos de transformación de λ‐NFA a DFA nunca producen transiciones λ; si lo hicieran, ni siquiera serían consistentes con las definiciones formales de lo que es un λ‐NFA y lo que es un DFA, y tampoco serían consistentes con lo que se entiende por determinismo.</p></li>
+                                </ol>
+                        </li>
+                        <li id="pregunta11">
+                                <h3>Identificadores en la revisión teórico‐práctica</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Tengo ciertas dudas con la parte teorica-practica de la primera etapa del proyecto.</p></li>
+                                                <li><p>Primero, en la 1 la expresion E3 debe reconocer a los identificadores, a que refieren con identificadores? (yeah...Im truly lost...)</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>La expresión regular E3 debería denotar el lenguaje de los identificadores (o nombres) de variables en AsGArD. El tercer párrafo de la sección 0 del documento de especificación del lenguaje AsGArD dice</p></li>
+                                        <li><blockquote>
+                                                <p>Cada identificador estará formado por una letra seguida de cualquier cantidad de letras y dígitos decimales.</p>
+                                        </blockquote></li>
+                                        <li><p>Para escribir esa expresión regular (y todas las demás de la revisión teórico-práctica) deberían limitarse a la notación matemática para expresiones regulares que se ha usado en las clases de teoría. Claro, es bastante incómodo describir conjuntos de caracteres en esa notación como los que se usarían en código con cosas como <code>[a-zA-Z]</code>, así que podrían usar una notación abreviada como <code>a + b + ... + z + A + B + ... + Z</code>, o algo por el estilo.</p></li>
+                                </ol>
+                        </li>
+                        <li id="pregunta12">
+                                <h3>Estados finales en el autómata de la unión de varios lenguajes: ¿uno o muchos?</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>Ahora, en la segunda parte cuando refieren a la unión del lenguaje, es unir la maquina M1, con M2 y M3?, o sea tipo un estado inicial que tenga 3 lamdas que conecten las maquinas y lleguen al mismo estado final? De ser así, que me preguntan realmente en la 4? Y a que juegan con nosotros en la 5? (really...)</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>En efecto, cuando se usa la técnica vista en clase para obtener un autómata para la unión de varios lenguajes dados autómatas para cada uno, resulta deseable que el autómata para la unión tenga un solo estado final. Para que esto pase, se agrega un nuevo estado (que se hace final) y se hace que todos los estados finales de las máquinas a unir vayan al nuevo estado final con transiciones λ.</p></li>
+                                        <li><p>Sin embargo, condensar los estados finales de la máquina para la unión en un solo estado hace que no se pueda distinguir cuál camino fue tomado para llegar a reconocer la palabra; aunque sí podría conocerse esa información viendo las transiciones completas de la máquina, no sería posible saberlo si lo único que se conoce es a cuál de los estados finales llegó la última transición.</p></li>
+                                        <li><p>Un <em>lexer</em> necesita esa información para decidir qué <em>token</em> emitir cuando se reconoce una parte de la entrada. Por lo tanto, cuando construyan el autómata de la unión en este ejercicio, es importante que <strong>no</strong> hagan que solo tenga un único estado final.</p></li>
+                                        <li><p>En otros ejercicios es útil hacer que haya un único estado final, porque así se pueden construir máquinas que solo tienen un punto de entrada y un punto de “salida” (o de reconocimiento exitoso), y eso facilita la prueba constructiva de la existencia de un autómata finito que reconoce el mismo lenguaje que cualquier expresión regular. Pero en el caso de estos ejercicios, eso no es deseable.</p></li>
+                                        <li><p>Concretamente, la pregunta 4 pide hacer corresponder cada estado final del autómata de la unión con algún tipo de <em>token</em> (que es lo mismo que hacer la correspondencia con alguno de los lenguajes de E1, E2 y E3).</p></li>
+                                        <li><p>La pregunta 5 se refiere a la existencia de ciertas palabras que pueden ir a parar a más de uno de esos estados finales cuando se corren sobre el autómata de la unión, así que no se sabría cuál de los <em>tokens</em> emitir. La pregunta 8 tiene que ver con tomar la decisión de cuál de los <em>tokens</em> posibles emitir en esos casos conflictivos o ambiguos.</p></li>
                                 </ol>
                         </li>
                 </ol>
