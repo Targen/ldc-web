@@ -17,15 +17,16 @@
                 <h2>2012‒05‒04 (semana 2): Consultas de la primera entrega del proyecto</h2>
                 <p>Acá les dejo las preguntas y respuestas de varias consultas que me han hecho estudiantes del curso sobre el segundo proyecto.  Espero que les sirvan.</p>
                 <ol>
-                        <li><a href="#pregunta1">Lectura de entrada y mecanismo de ejecución                                             </a></li>
-                        <li><a href="#pregunta2">Tipos de datos para los <em>token</em>s                                                 </a></li>
-                        <li><a href="#pregunta3">Comentarios incompletos y errores léxicos                                               </a></li>
-                        <li><a href="#pregunta4"><em>Token</em> para <code>of type</code>: <code>TkOfType</code> vs. <code>TkIdent</code></a></li>
-                        <li><a href="#pregunta5">Problemas de <code>of type</code> específicos a Python+PLY                              </a></li>
-                        <li><a href="#pregunta6">Lectura por entrada estándar                                                            </a></li>
-                        <li><a href="#pregunta7">Punto de entrada en lenguajes dinámicos                                                 </a></li>
-                        <li><a href="#pregunta8">Informe                                                                                 </a></li>
-                        <li><a href="#pregunta9">Espacio en blanco y delimitadores de literales de lienzo en el formato de salida        </a></li>
+                        <li><a href="#pregunta1" >Lectura de entrada y mecanismo de ejecución                                             </a></li>
+                        <li><a href="#pregunta2" >Tipos de datos para los <em>token</em>s                                                 </a></li>
+                        <li><a href="#pregunta3" >Comentarios incompletos y errores léxicos                                               </a></li>
+                        <li><a href="#pregunta4" ><em>Token</em> para <code>of type</code>: <code>TkOfType</code> vs. <code>TkIdent</code></a></li>
+                        <li><a href="#pregunta5" >Problemas de <code>of type</code> específicos a Python+PLY                              </a></li>
+                        <li><a href="#pregunta6" >Lectura por entrada estándar                                                            </a></li>
+                        <li><a href="#pregunta7" >Punto de entrada en lenguajes dinámicos                                                 </a></li>
+                        <li><a href="#pregunta8" >Informe                                                                                 </a></li>
+                        <li><a href="#pregunta9" >Espacio en blanco y delimitadores de literales de lienzo en el formato de salida        </a></li>
+                        <li><a href="#pregunta10">Transiciones λ en autómatas finitos determinísticos                                     </a></li>
                 </ol>
                 <ol>
                         <li id="pregunta1">
@@ -276,9 +277,45 @@ TkLienzo("</>")
                                         <li><p>Un detalle que sí está especificado y que deben tomar en cuenta es que la representación textual de los <em>tokens</em> de literales de lienzo no debe incluir a los símbolos <code>&lt;</code> ni <code>&gt;</code> según el punto 5 de la primera lista del enunciado de la primera etapa del proyecto:</p></li>
                                         <li><blockquote>
                                                 <ul>
-                                                        <li>Los literales lienzos, los cuales serán uno de los siguientes: <code>&lt;empty&gt;</code>, <code>&lt;/&gt;</code>, <code>&lt;\&gt;</code>, <code>&lt;|&gt;</code>, <code>&lt;_&gt;</code>, <code>&lt;-&gt;</code> o <code>&lt; &gt;</code>. Todos estos serán representados por el token <code>TkLienzo</code>, parametrizado por el contenido envuelto entre los sìmbolos <code>&lt;</code> y <code>&gt;</code>. Por ejemplo, el literal de lienzo <code>&lt;/&gt;</code> será representado por <code>TkLienzo(&quot;/&quot;)</code>.</li>
+                                                        <li>Los literales lienzos, los cuales serán uno de los siguientes: <code>&lt;empty&gt;</code>, <code>&lt;/&gt;</code>, <code>&lt;\&gt;</code>, <code>&lt;|&gt;</code>, <code>&lt;_&gt;</code>, <code>&lt;-&gt;</code> o <code>&lt; &gt;</code>. Todos estos serán representados por el token <code>TkLienzo</code>, parametrizado por el contenido envuelto entre los sìmbolos <code>&lt;</code> y <code>&gt;</code>. Por ejemplo, el literal de lienzo <code>&lt;/&gt;</code> será representado por <code>TkLienzo("/")</code>.</li>
                                                 </ul>
                                         </blockquote></li>
+                                </ol>
+                        </li>
+                        <li id="pregunta10">
+                                <h3>Transiciones λ en autómatas finitos determinísticos</h3>
+                                <h4>Pregunta</h4>
+                                <blockquote>
+                                        <ol>
+                                                <li><p>En teoría nos dijeron que un autómata finito determinístico NO podía tener lambda transiciones; más al hacer el autómata finito no determinístico correspondiente a la unión de las 3 E.R (pregunta 3), ajuro quedan lambda transiciones para pasar de un estado inicial nuevo a los estados iniciales de cada una de las máquinas, más la lambda transición que tiene la máquina 3 para hacer la clausura de kleene. Al aplicar el algoritmo de hacer ese automáta no determinístico - determinístico, se logra el objetivo de hacerlo determinista, más sigue teniendo lambda transiciones. ¿Está esto mal? ¿La nueva máquina determinista puede seguir teniendo lambda transiciones?</p></li>
+                                        </ol>
+                                </blockquote>
+                                <h4>Respuesta</h4>
+                                <ol>
+                                        <li><p>Eso estaría mal. Una transición λ en un λ‐NFA</p></li>
+                                        <li><blockquote>
+                                                <p>M = (Q, F, q₀, δ)</p>
+                                        </blockquote></li>
+                                        <li><p>se manifiesta cuando existe un estado</p></li>
+                                        <li><blockquote>
+                                                <p>qᵢ ∈ Q</p>
+                                        </blockquote></li>
+                                        <li><p>tal que</p></li>
+                                        <li><blockquote>
+                                                <p>δ(qᵢ, λ) ≠ ∅</p>
+                                        </blockquote></li>
+                                        <li><p>Esto tiene sentido en un λ‐NFA porque</p></li>
+                                        <li><blockquote>
+                                                <p>δ : Q × (Σ¹∪{λ}) → 𝒫(Q)</p>
+                                        </blockquote></li>
+                                        <li><p>La definición de los λ‐NFAs admite la posibilidad de efectuar una transición de la máquina sin consumir símbolos de la entrada porque su función de transición tiene esta forma: recibe un estado y una palabra cualquiera de longitud cero o uno sobre el alfabeto, y produce un conjunto de posibles estados destino. Si la palabra que recibe la función de transición es de tamaño 1, entonces esa transición consume el símbolo de la palabra; si es de tamaño cero, no consume ningún símbolo. Las transiciones λ corresponden a los resultados no nulos de δ con algún estado y con la palabra vacía.</p></li>
+                                        <li><p>En cambio, la definición de los DFAs utiliza otra forma para la función de transición:</p></li>
+                                        <li><blockquote>
+                                                <p>δ : Q × Σ → Q</p>
+                                        </blockquote></li>
+                                        <li><p>En los DFAs, la función de transición recibe un estado y exactamente un símbolo que es tomado de la entrada. Como tiene que ser exactamente un símbolo, no puede ser una palabra vacía, y no es posible tener transiciones que no consuman exactamente un símbolo, como las transiciones λ que consumen cero símbolos.</p></li>
+                                        <li><p>Más intuitivamente, un autómata con transiciones λ no puede ser considerado directamente determinístico por una razón que va más allá de las restricciones de la definición formal. Un autómata determinístico es uno en el cual el estado alcanzado al ejecutar la máquina con cualquier palabra es uno y solo uno al terminar de consumirla. Si un autómata tiene una transición λ entre un estado qᵢ y otro estado qⱼ, entonces siempre que la máquina llegue al estado qᵢ al terminar de consumir su entrada, podría también haber llegado al estado qⱼ. Como habría más de una posibilidad, no habría determinismo.</p></li>
+                                        <li><p>Los algoritmos de transformación de λ‐NFA a DFA nunca producen transiciones λ; si lo hicieran, ni siquiera serían consistentes con las definiciones formales de lo que es un λ‐NFA y lo que es un DFA, y tampoco serían consistentes con lo que se entiende por determinismo.</p></li>
                                 </ol>
                         </li>
                 </ol>
