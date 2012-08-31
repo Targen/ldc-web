@@ -1,0 +1,27 @@
+prefix="$HOME/.haskell"
+ghc="$prefix/ghc/7.4.2"
+
+mkdir -p "$prefix/pkg/dist"
+
+cd ~/.haskell/pkg/dist      && wget http://www.haskell.org/ghc/dist/7.4.2/ghc-7.4.2-x86_64-unknown-linux.tar.bz2
+cd ~/.haskell/pkg           && pax -jrvf dist/ghc-7.4.2-x86_64-unknown-linux.tar.bz2
+cd ~/.haskell/pkg/ghc-7.4.2 && ./configure --prefix="$ghc" && make install
+
+hash -r
+export PATH="$ghc/bin:$PATH"
+
+cd "$prefix/pkg/dist"                        && wget http://lambda.haskell.org/platform/download/2012.2.0.0/haskell-platform-2012.2.0.0.tar.gz
+cd "$prefix/pkg"                             && pax -zrvf dist/haskell-platform-2012.2.0.0.tar.gz
+cd "$prefix/pkg/haskell-platform-2012.2.0.0" && ./configure --prefix="$ghc" --enable-unsupported-ghc-version && make && make install
+
+hash -r
+
+cd "$prefix/pkg"                     && git clone git://github.com/haskell/cabal.git
+cd "$prefix/pkg/cabal/Cabal"         && cabal install
+cd "$prefix/pkg/cabal/cabal-install" && cabal install
+
+hash -r
+export PATH="$HOME/.cabal/bin:$PATH"
+
+cabal update
+cabal install pandoc

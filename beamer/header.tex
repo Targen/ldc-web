@@ -1,0 +1,10 @@
+\setbeamerfont{section title}{parent=title}
+\setbeamercolor{section title}{parent=titlelike}
+\defbeamertemplate*{section page}{default}[1][]
+{
+  \centering
+    \begin{beamercolorbox}[sep=8pt,center,#1]{section title}
+      \usebeamerfont{section title}\insertsection\par
+    \end{beamercolorbox}
+}
+\newcommand*{\sectionpage}{\usebeamertemplate*{section page}}
